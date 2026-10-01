@@ -1,0 +1,7 @@
+// Debug-QA: Debug build of the qa environment.
+// Managed by scripts/ios-configure-project.rb.
+#include? "../Pods/Target Support Files/Pods-Baseline/Pods-Baseline.debug-qa.xcconfig"
+#include "Generated/qa.xcconfig"
+#include "Shared.xcconfig"
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG
+

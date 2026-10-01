@@ -1,0 +1,6 @@
+// Release-QA: Release build of the qa environment.
+// Managed by scripts/ios-configure-project.rb.
+#include? "../Pods/Target Support Files/Pods-Baseline/Pods-Baseline.release-qa.xcconfig"
+#include "Generated/qa.xcconfig"
+#include "Shared.xcconfig"
+

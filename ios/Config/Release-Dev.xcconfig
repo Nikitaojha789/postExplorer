@@ -1,0 +1,6 @@
+// Release-Dev: Release build of the development environment.
+// Managed by scripts/ios-configure-project.rb.
+#include? "../Pods/Target Support Files/Pods-Baseline/Pods-Baseline.release-dev.xcconfig"
+#include "Generated/development.xcconfig"
+#include "Shared.xcconfig"
+

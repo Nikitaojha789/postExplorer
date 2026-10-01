@@ -1,0 +1,6 @@
+// Release-Staging: Release build of the staging environment.
+// Managed by scripts/ios-configure-project.rb.
+#include? "../Pods/Target Support Files/Pods-Baseline/Pods-Baseline.release-staging.xcconfig"
+#include "Generated/staging.xcconfig"
+#include "Shared.xcconfig"
+

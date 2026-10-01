@@ -1,0 +1,6 @@
+// Release-Prod: Release build of the production environment.
+// Managed by scripts/ios-configure-project.rb.
+#include? "../Pods/Target Support Files/Pods-Baseline/Pods-Baseline.release-prod.xcconfig"
+#include "Generated/production.xcconfig"
+#include "Shared.xcconfig"
+

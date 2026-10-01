@@ -1,0 +1,83 @@
+# Resolve react_native_pods.rb with node to allow for hoisting
+require Pod::Executable.execute_command('node', ['-p',
+  'require.resolve(
+    "react-native/scripts/react_native_pods.rb",
+    {paths: [process.argv[1]]},
+  )', __dir__]).strip
+
+def node_require(script)
+  require Pod::Executable.execute_command('node', ['-p',
+    "require.resolve('#{script}', {paths: [process.argv[1]]})", __dir__]).strip
+end
+
+node_require('react-native-permissions/scripts/setup.rb')
+
+platform :ios, min_ios_version_supported
+prepare_react_native_project!
+
+# Environments ↔ build configurations (see scripts/ios-configure-project.rb).
+ENVIRONMENTS = { 'Dev' => 'development', 'QA' => 'qa', 'Staging' => 'staging', 'Prod' => 'production' }.freeze
+project 'Baseline', ENVIRONMENTS.keys.flat_map { |env|
+  [["Debug-#{env}", :debug], ["Release-#{env}", :release]]
+}.to_h
+
+# Only the permissions listed here are compiled into the binary. Each one also
+# needs an Info.plist usage string (e.g. NSCameraUsageDescription).
+setup_permissions([
+  'Notifications',
+])
+
+linkage = ENV['USE_FRAMEWORKS']
+if linkage != nil
+  Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
+  use_frameworks! :linkage => linkage.to_sym
+end
+
+pre_install do |_installer|
+  # Regenerate per-environment xcconfigs from the .env.* files.
+  system('node', File.join(__dir__, '../scripts/ios-env.mjs')) || raise('scripts/ios-env.mjs failed')
+end
+
+target 'Baseline' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+
+  post_install do |installer|
+    react_native_post_install(
+      installer,
+      config[:reactNativePath],
+      :mac_catalyst_enabled => false,
+      # Compiler cache: big win for CI/clean builds. Requires `brew install ccache`.
+      :ccache_enabled => ENV['USE_CCACHE'] == '1'
+    )
+
+    # Some pods (resource bundles) still declare iOS 9; current Xcode rejects
+    # anything below its supported range. Align every pod with RN's minimum.
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |build_config|
+        current = build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+        if current.nil? || Gem::Version.new(current) < Gem::Version.new(min_ios_version_supported)
+          build_config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = min_ios_version_supported
+        end
+      end
+    end
+
+    # react-native-config generates its native constants from ENVFILE; pin the
+    # file per build configuration so builds are deterministic and parallel-safe
+    # (no shared /tmp/envfile).
+    installer.pods_project.targets.each do |target|
+      next unless target.name == 'react-native-config'
+      target.build_configurations.each do |build_config|
+        # CocoaPods always keeps plain Debug/Release in the Pods project.
+        env = build_config.name.split('-').last
+        env_file = ENVIRONMENTS[env] || (build_config.name == 'Debug' ? 'development' : 'production')
+        build_config.build_settings['ENVFILE'] = ".env.#{env_file}"
+      end
+    end
+  end
+end

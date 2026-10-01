@@ -1,0 +1,7 @@
+// Debug-Staging: Debug build of the staging environment.
+// Managed by scripts/ios-configure-project.rb.
+#include? "../Pods/Target Support Files/Pods-Baseline/Pods-Baseline.debug-staging.xcconfig"
+#include "Generated/staging.xcconfig"
+#include "Shared.xcconfig"
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG
+

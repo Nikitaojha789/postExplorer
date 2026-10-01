@@ -1,0 +1,43 @@
+# Smoke test: cold start → sign in → feed → detail → back → settings → sign out.
+# Selectors use testID only (stable across copy and language changes).
+appId: com.company.baseline.dev
+---
+- launchApp:
+    clearState: true
+- extendedWaitUntil:
+    visible:
+      id: 'sign-in-screen'
+    timeout: 15000
+
+- tapOn:
+    id: 'sign-in-email'
+- inputText: 'qa@example.com'
+- tapOn:
+    id: 'sign-in-password'
+- inputText: 'password'
+- hideKeyboard
+- tapOn:
+    id: 'sign-in-submit'
+
+- extendedWaitUntil:
+    visible:
+      id: 'feed-item-1'
+    timeout: 15000
+- scroll
+- tapOn:
+    id: 'feed-item-2'
+- assertVisible:
+    id: 'feed-item-screen'
+- back
+
+- tapOn:
+    id: 'tab-settings'
+- assertVisible:
+    id: 'settings-screen'
+- scrollUntilVisible:
+    element:
+      id: 'sign-out'
+- tapOn:
+    id: 'sign-out'
+- assertVisible:
+    id: 'sign-in-screen'

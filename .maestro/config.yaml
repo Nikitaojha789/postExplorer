@@ -1,0 +1,4 @@
+# Maestro workspace config — https://docs.maestro.dev
+# Flows run against a DEV build (mock API on). Run: `npm run e2e`
+flows:
+  - 'flows/*'

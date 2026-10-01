@@ -1,0 +1,7 @@
+// Debug-Prod: Debug build of the production environment.
+// Managed by scripts/ios-configure-project.rb.
+#include? "../Pods/Target Support Files/Pods-Baseline/Pods-Baseline.debug-prod.xcconfig"
+#include "Generated/production.xcconfig"
+#include "Shared.xcconfig"
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG
+

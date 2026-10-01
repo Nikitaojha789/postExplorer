@@ -1,0 +1,74 @@
+# Release automation. Invoked by .github/workflows/release.yml:
+#   bundle exec fastlane android release env:staging
+#   bundle exec fastlane ios release env:prod
+#
+# Versioning: marketing version = package.json "version" (bump it in a PR);
+# build number = BUILD_NUMBER (CI run number), always increasing.
+require 'json'
+
+ENVIRONMENTS = {
+  'qa'      => { flavor: 'qa',      scheme: 'QA',      suffix: '.qa' },
+  'staging' => { flavor: 'staging', scheme: 'Staging', suffix: '.staging' },
+  'prod'    => { flavor: 'prod',    scheme: 'Prod',    suffix: '' },
+}.freeze
+BASE_ID = 'com.company.baseline'
+
+def environment!(options)
+  ENVIRONMENTS.fetch(options[:env].to_s) { UI.user_error!("env must be one of #{ENVIRONMENTS.keys.join(', ')}") }
+end
+
+def build_number
+  ENV.fetch('BUILD_NUMBER') { UI.user_error!('BUILD_NUMBER is required') }
+end
+
+platform :android do
+  desc 'Build a signed AAB and upload it to the Play internal track'
+  lane :release do |options|
+    env = environment!(options)
+    gradle(
+      project_dir: 'android',
+      task: 'bundle',
+      flavor: env[:flavor],
+      build_type: 'Release',
+    )
+    upload_to_play_store(
+      package_name: "#{BASE_ID}#{env[:suffix]}",
+      track: 'internal',
+      aab: lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH],
+      json_key_data: ENV.fetch('PLAY_STORE_JSON_KEY'),
+      release_status: 'draft',
+    )
+  end
+end
+
+platform :ios do
+  desc 'Build a signed IPA and upload it to TestFlight'
+  lane :release do |options|
+    env = environment!(options)
+    setup_ci if ENV['CI']
+
+    api_key = app_store_connect_api_key(
+      key_id: ENV.fetch('APP_STORE_CONNECT_API_KEY_ID'),
+      issuer_id: ENV.fetch('APP_STORE_CONNECT_API_ISSUER_ID'),
+      key_content: ENV.fetch('APP_STORE_CONNECT_API_KEY'),
+    )
+
+    # Certificates & profiles live in an encrypted git repo (fastlane match).
+    match(
+      type: 'appstore',
+      readonly: true,
+      app_identifier: "#{BASE_ID}#{env[:suffix]}",
+      api_key: api_key,
+    )
+
+    build_app(
+      workspace: 'ios/Baseline.xcworkspace',
+      scheme: "Baseline-#{env[:scheme]}",
+      configuration: "Release-#{env[:scheme]}",
+      export_method: 'app-store',
+      xcargs: "CURRENT_PROJECT_VERSION=#{build_number}",
+    )
+
+    upload_to_testflight(api_key: api_key, skip_waiting_for_build_processing: true)
+  end
+end

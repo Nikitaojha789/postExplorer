@@ -1,0 +1,69 @@
+{
+  "common": {
+    "appName": "Baseline",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "loading": "Loading…",
+    "offline": "You're offline. Showing saved data."
+  },
+  "errors": {
+    "generic": "Something went wrong. Please try again.",
+    "network": "Can't reach the server. Check your connection.",
+    "offline": "You're offline.",
+    "timeout": "The request took too long. Please try again.",
+    "unauthorized": "Your session has expired. Please sign in again.",
+    "forbidden": "You don't have access to this.",
+    "notFound": "We couldn't find what you were looking for.",
+    "server": "Our servers are having trouble. Please try again shortly.",
+    "rateLimited": "Too many attempts. Please wait a moment."
+  },
+  "errorBoundary": {
+    "title": "Something went wrong",
+    "message": "An unexpected error occurred. We've been notified.",
+    "action": "Reload"
+  },
+  "validation": {
+    "required": "This field is required",
+    "email": "Enter a valid email address",
+    "minLength_one": "Must be at least {{count}} character",
+    "minLength_other": "Must be at least {{count}} characters"
+  },
+  "auth": {
+    "title": "Welcome back",
+    "subtitle": "Sign in to continue",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign in",
+    "invalidCredentials": "Incorrect email or password.",
+    "mockHint": "Mock API: any email, password “password”."
+  },
+  "tabs": {
+    "feed": "Feed",
+    "settings": "Settings"
+  },
+  "feed": {
+    "title": "Feed",
+    "emptyTitle": "Nothing here yet",
+    "emptyMessage": "New items will appear here.",
+    "itemCount_one": "{{count}} item",
+    "itemCount_other": "{{count}} items",
+    "detailTitle": "Details"
+  },
+  "settings": {
+    "title": "Settings",
+    "appearance": "Appearance",
+    "theme": {
+      "system": "System",
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "language": "Language",
+    "restartTitle": "Restart required",
+    "restartMessage": "The app will restart to switch text direction.",
+    "about": "About",
+    "version": "Version",
+    "environment": "Environment",
+    "signOut": "Sign out"
+  }
+}

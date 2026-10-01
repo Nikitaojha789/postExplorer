@@ -1,0 +1,77 @@
+{
+  "common": {
+    "appName": "Baseline",
+    "retry": "حاول مرة أخرى",
+    "cancel": "إلغاء",
+    "confirm": "تأكيد",
+    "loading": "جارٍ التحميل…",
+    "offline": "أنت غير متصل. يتم عرض البيانات المحفوظة."
+  },
+  "errors": {
+    "generic": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "network": "تعذر الوصول إلى الخادم. تحقق من اتصالك.",
+    "offline": "أنت غير متصل.",
+    "timeout": "استغرق الطلب وقتًا طويلاً. يرجى المحاولة مرة أخرى.",
+    "unauthorized": "انتهت جلستك. يرجى تسجيل الدخول مرة أخرى.",
+    "forbidden": "ليس لديك صلاحية الوصول.",
+    "notFound": "لم نتمكن من العثور على ما تبحث عنه.",
+    "server": "تواجه خوادمنا مشكلة. يرجى المحاولة بعد قليل.",
+    "rateLimited": "محاولات كثيرة جدًا. يرجى الانتظار قليلاً."
+  },
+  "errorBoundary": {
+    "title": "حدث خطأ ما",
+    "message": "حدث خطأ غير متوقع. تم إبلاغنا بذلك.",
+    "action": "إعادة التحميل"
+  },
+  "validation": {
+    "required": "هذا الحقل مطلوب",
+    "email": "أدخل بريدًا إلكترونيًا صالحًا",
+    "minLength_zero": "يجب ألا يقل عن {{count}} حرف",
+    "minLength_one": "يجب ألا يقل عن حرف واحد",
+    "minLength_two": "يجب ألا يقل عن حرفين",
+    "minLength_few": "يجب ألا يقل عن {{count}} أحرف",
+    "minLength_many": "يجب ألا يقل عن {{count}} حرفًا",
+    "minLength_other": "يجب ألا يقل عن {{count}} حرف"
+  },
+  "auth": {
+    "title": "مرحبًا بعودتك",
+    "subtitle": "سجّل الدخول للمتابعة",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "submit": "تسجيل الدخول",
+    "invalidCredentials": "البريد الإلكتروني أو كلمة المرور غير صحيحة.",
+    "mockHint": "واجهة تجريبية: أي بريد، وكلمة المرور “password”."
+  },
+  "tabs": {
+    "feed": "الرئيسية",
+    "settings": "الإعدادات"
+  },
+  "feed": {
+    "title": "الرئيسية",
+    "emptyTitle": "لا يوجد شيء هنا بعد",
+    "emptyMessage": "ستظهر العناصر الجديدة هنا.",
+    "itemCount_zero": "لا توجد عناصر",
+    "itemCount_one": "عنصر واحد",
+    "itemCount_two": "عنصران",
+    "itemCount_few": "{{count}} عناصر",
+    "itemCount_many": "{{count}} عنصرًا",
+    "itemCount_other": "{{count}} عنصر",
+    "detailTitle": "التفاصيل"
+  },
+  "settings": {
+    "title": "الإعدادات",
+    "appearance": "المظهر",
+    "theme": {
+      "system": "النظام",
+      "light": "فاتح",
+      "dark": "داكن"
+    },
+    "language": "اللغة",
+    "restartTitle": "إعادة التشغيل مطلوبة",
+    "restartMessage": "سيُعاد تشغيل التطبيق لتغيير اتجاه النص.",
+    "about": "حول التطبيق",
+    "version": "الإصدار",
+    "environment": "البيئة",
+    "signOut": "تسجيل الخروج"
+  }
+}

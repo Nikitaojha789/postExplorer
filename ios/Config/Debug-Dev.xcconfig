@@ -1,0 +1,7 @@
+// Debug-Dev: Debug build of the development environment.
+// Managed by scripts/ios-configure-project.rb.
+#include? "../Pods/Target Support Files/Pods-Baseline/Pods-Baseline.debug-dev.xcconfig"
+#include "Generated/development.xcconfig"
+#include "Shared.xcconfig"
+SWIFT_ACTIVE_COMPILATION_CONDITIONS = $(inherited) DEBUG
+

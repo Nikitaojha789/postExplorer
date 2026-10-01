@@ -1,0 +1,11 @@
+# Deep link into a detail screen while signed in, and confirm it is gated when signed out.
+appId: com.company.baseline.dev
+---
+- launchApp:
+    clearState: true
+- openLink: 'baseline-dev://items/7'
+# Signed out: auth-gated routes are unreachable, the sign-in screen shows instead.
+- extendedWaitUntil:
+    visible:
+      id: 'sign-in-screen'
+    timeout: 15000

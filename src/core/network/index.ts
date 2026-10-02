@@ -1,1 +1,6 @@
-export { bindNetworkStatus, useIsOnline } from './onlineManager';
+export {
+  bindNetworkStatus,
+  isSimulatedOffline,
+  setSimulatedOffline,
+  useIsOnline,
+} from './onlineManager';

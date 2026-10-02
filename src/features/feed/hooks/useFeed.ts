@@ -19,8 +19,7 @@ export const useFeed = () =>
     initialPageParam: null as string | null,
     getNextPageParam: lastPage => lastPage.nextCursor,
     select: flattenPages,
-    // Cap memory for long sessions: keep at most 10 pages in the cache.
-    maxPages: 10,
+    // No `maxPages`: see docs/PERFORMANCE.md → Lists before capping pages.
     meta: { persist: true },
   });
 

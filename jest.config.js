@@ -14,7 +14,13 @@ module.exports = {
   ],
   // `*.perf-test.tsx` files don't match the default testMatch; Reassure runs them.
   testPathIgnorePatterns: ['/node_modules/', '/android/', '/ios/'],
-  collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/**/index.ts', '!src/**/*.d.ts'],
+  // Reassure perf tests are tests, not source: don't count them as uncovered code.
+  collectCoverageFrom: [
+    'src/**/*.{ts,tsx}',
+    '!src/**/index.ts',
+    '!src/**/*.d.ts',
+    '!src/**/*.perf-test.tsx',
+  ],
   // Ratchet: set just below the current measured coverage. Raise these when
   // coverage grows; never lower them to make a PR pass.
   coverageThreshold: {

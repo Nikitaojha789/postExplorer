@@ -356,22 +356,28 @@ Then **rebuild the app** (`npm run ios:dev` / `npm run android:dev`). Just reloa
 
 ## 7. Everyday "how do I…?"
 
-| I want to…                        | Do this                                                                                                    |
-| --------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| Show text                         | `<Text variant="body">{t('key')}</Text>` from `@/ui`                                                       |
-| Show a button                     | `<Button title={t('key')} onPress={…} loading={isPending} />`                                              |
-| Show an input                     | `<TextField label={t('key')} … />` (with react-hook-form — see `SignInScreen.tsx`)                         |
-| Show an image                     | `<Image source={url} style={{ width: 56, height: 56 }} accessibilityLabel={null} />` from `@/ui`           |
-| Show a short message              | `toast.success(t('key'))` from `@/ui`                                                                      |
-| Use theme colours                 | `makeStyles(({ colors, spacing }) => ({ box: { backgroundColor: colors.surface, padding: spacing.lg } }))` |
-| Know if user is logged in         | `useSessionStatus()` / `useSessionUser()` from `@/core/auth`                                               |
-| Log something                     | `logger.info('message', { data })` from `@/core/logger` (never `console.log`)                              |
-| Track an analytics event          | Declare it in `src/core/analytics/analytics.ts`, then `analytics.track('event_name', { … })`               |
-| Save a small setting on the phone | Add a key to `src/core/storage/keys.ts`, use `appStorage.setString(...)`                                   |
-| Save a secret (token)             | `secureStorage.set(...)` from `@/core/storage`                                                             |
-| Ask for a permission              | See COOKBOOK.md → "Request a permission"                                                                   |
-| Add a language                    | See COOKBOOK.md → "Add a translation language"                                                             |
-| Switch a feature on/off remotely  | See COOKBOOK.md → "Add a feature flag"                                                                     |
+| I want to…                        | Do this                                                                                                     |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Show text                         | `<Text variant="body">{t('key')}</Text>` from `@/ui`                                                        |
+| Show a button                     | `<Button title={t('key')} onPress={…} loading={isPending} />`                                               |
+| Show an input                     | `<TextField label={t('key')} … />` (with react-hook-form — see `SignInScreen.tsx`)                          |
+| Show an image                     | `<Image source={url} style={{ width: 56, height: 56 }} accessibilityLabel={null} />` from `@/ui`            |
+| Show a short message              | `toast.success(t('key'))` from `@/ui`                                                                       |
+| Show a loading placeholder        | `<Skeleton height={56} />` from `@/ui` (one per row, shaped like the content)                               |
+| Show filter/sort chips            | `<ChipRow>{options.map(o => <Chip key={o} label={…} value={o} selected={…} onPress={select} />)}</ChipRow>` |
+| Group settings-style rows         | `<Section title={t('key')}>…ListRows…</Section>` from `@/ui`                                                |
+| Search field above a list         | `<Screen avoidKeyboard>` (see COOKBOOK.md → "Keyboard on a list screen")                                    |
+| Save data that belongs to a user  | Zustand + `validatedPersistOptions` (see COOKBOOK.md → "Persist a client store")                            |
+| Test offline / slow network       | Dev Menu → `Network:` entries (see COOKBOOK.md → Debugging)                                                 |
+| Use theme colours                 | `makeStyles(({ colors, spacing }) => ({ box: { backgroundColor: colors.surface, padding: spacing.lg } }))`  |
+| Know if user is logged in         | `useSessionStatus()` / `useSessionUser()` from `@/core/auth`                                                |
+| Log something                     | `logger.info('message', { data })` from `@/core/logger` (never `console.log`)                               |
+| Track an analytics event          | Declare it in `src/core/analytics/analytics.ts`, then `analytics.track('event_name', { … })`                |
+| Save a small setting on the phone | Add a key to `src/core/storage/keys.ts`, use `appStorage.setString(...)`                                    |
+| Save a secret (token)             | `secureStorage.set(...)` from `@/core/storage`                                                              |
+| Ask for a permission              | See COOKBOOK.md → "Request a permission"                                                                    |
+| Add a language                    | See COOKBOOK.md → "Add a translation language"                                                              |
+| Switch a feature on/off remotely  | See COOKBOOK.md → "Add a feature flag"                                                                      |
 
 ---
 

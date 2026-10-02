@@ -132,4 +132,33 @@ describe('createHttpClient', () => {
     controller.abort();
     await expect(pending).rejects.toMatchObject({ kind: 'cancelled' });
   });
+
+  describe('abort classification (RN fetch rejects every abort with a plain AbortError)', () => {
+    // Mirrors whatwg-fetch in React Native: on abort it rejects with a generic
+    // `AbortError` and drops the signal's reason (TimeoutError vs caller abort).
+    const rnLikeFetch: typeof fetch = (_input, init) =>
+      new Promise((_resolve, reject) => {
+        init?.signal?.addEventListener('abort', () =>
+          reject(Object.assign(new Error('Aborted'), { name: 'AbortError' })),
+        );
+      });
+    const client = createHttpClient({
+      baseUrl: 'https://api.test',
+      timeoutMs: 20,
+      fetchImpl: rnLikeFetch,
+    });
+
+    it('reports a client-side timeout as `timeout` (retryable), not `cancelled`', async () => {
+      const error = await client.get('/slow').catch((e: unknown) => e);
+      expect(error).toMatchObject({ kind: 'timeout' });
+      expect((error as AppError).isRetryable).toBe(true);
+    });
+
+    it('still reports a caller abort as `cancelled`', async () => {
+      const controller = new AbortController();
+      const pending = client.get('/slow', { signal: controller.signal, timeoutMs: 5_000 });
+      controller.abort();
+      await expect(pending).rejects.toMatchObject({ kind: 'cancelled' });
+    });
+  });
 });

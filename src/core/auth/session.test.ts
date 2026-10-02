@@ -1,7 +1,7 @@
 import { queryClient } from '@/core/api';
 import { SecureKeys, secureStorage, StorageKeys, userStorage } from '@/core/storage';
 
-import { endSession, restoreSession, startSession } from './session';
+import { endSession, onSessionEnded, restoreSession, startSession } from './session';
 import { useSessionStore } from './sessionStore';
 import { tokens } from './tokens';
 
@@ -49,5 +49,38 @@ describe('session lifecycle', () => {
     expect(await secureStorage.get(SecureKeys.refreshToken)).toBeNull();
     expect(userStorage.getString(StorageKeys.sessionUser)).toBeUndefined();
     expect(queryClient.getQueryData(['private'])).toBeUndefined();
+  });
+
+  it('notifies session-ended listeners, even when one of them throws', async () => {
+    const first = jest.fn(() => {
+      throw new Error('store reset failed');
+    });
+    const second = jest.fn();
+    const unsubscribeFirst = onSessionEnded(first);
+    const unsubscribeSecond = onSessionEnded(second);
+    await startSession(pair, user);
+
+    await endSession('expired');
+
+    expect(first).toHaveBeenCalledWith('expired');
+    expect(second).toHaveBeenCalledWith('expired');
+    expect(useSessionStore.getState().status).toBe('signedOut');
+    expect(await secureStorage.get(SecureKeys.refreshToken)).toBeNull();
+
+    unsubscribeFirst();
+    unsubscribeSecond();
+    await startSession(pair, user);
+    await endSession('user');
+    expect(second).toHaveBeenCalledTimes(1);
+  });
+
+  it('leaves user storage empty even if a listener persists a reset state', async () => {
+    const unsubscribe = onSessionEnded(() => userStorage.setString(StorageKeys.sessionUser, '{}'));
+    await startSession(pair, user);
+
+    await endSession('user');
+
+    expect(userStorage.getString(StorageKeys.sessionUser)).toBeUndefined();
+    unsubscribe();
   });
 });

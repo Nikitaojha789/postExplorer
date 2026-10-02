@@ -206,26 +206,27 @@ Screen ──uses──▶ feature hook (useFeed) ──▶ useQuery({ queryKey:
 
 ### 4.3 Authentication & session
 
-| Concern                      | Where                        | How                                                                                                                                              |
-| ---------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
-| Access token                 | `core/auth/tokens.ts`        | **Memory only.** Lost on cold start by design; re-obtained by refresh.                                                                           |
-| Refresh token                | Keychain / Keystore          | `AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY`, never backed up or migrated.                                                                              |
-| User profile (non-sensitive) | MMKV `user` store            | Restores the signed-in UI instantly. Wiped on sign-out.                                                                                          |
-| Session state                | Zustand `useSessionStore`    | `restoring → signedIn                                                                                                                            | signedOut`. Holds **no tokens**. |
-| Expiry                       | `httpClient`                 | 401 → one shared refresh for all concurrent requests → retry once.                                                                               |
-| Refresh contract             | `core/auth/session.ts`       | Returns token · returns `null` (definitive rejection → sign out) · **throws** on transient failure, so a flaky network never signs the user out. |
-| Navigation                   | `RootNavigator` `if:` groups | The navigator swaps stacks when the session flips; screens never `navigate()` after sign-in/out.                                                 |
-| Sign-out                     | `endSession()`               | Flip state → clear query cache → wipe user store → reset monitoring/analytics → delete Keychain item.                                            |
+| Concern                      | Where                        | How                                                                                                                                                                |
+| ---------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Access token                 | `core/auth/tokens.ts`        | **Memory only.** Lost on cold start by design; re-obtained by refresh.                                                                                             |
+| Refresh token                | Keychain / Keystore          | `AFTER_FIRST_UNLOCK_THIS_DEVICE_ONLY`, never backed up or migrated.                                                                                                |
+| User profile (non-sensitive) | MMKV `user` store            | Restores the signed-in UI instantly. Wiped on sign-out.                                                                                                            |
+| Session state                | Zustand `useSessionStore`    | `restoring → signedIn                                                                                                                                              | signedOut`. Holds **no tokens**. |
+| Expiry                       | `httpClient`                 | 401 → one shared refresh for all concurrent requests → retry once.                                                                                                 |
+| Refresh contract             | `core/auth/session.ts`       | Returns token · returns `null` (definitive rejection → sign out) · **throws** on transient failure, so a flaky network never signs the user out.                   |
+| Navigation                   | `RootNavigator` `if:` groups | The navigator swaps stacks when the session flips; screens never `navigate()` after sign-in/out.                                                                   |
+| Sign-out                     | `endSession()`               | Flip state → clear query cache → notify `onSessionEnded` listeners (user-data stores reset) → wipe user store → reset monitoring/analytics → delete Keychain item. |
 
 ### 4.4 State management rules
 
-| Kind of state         | Tool                      | Examples                                                |
-| --------------------- | ------------------------- | ------------------------------------------------------- |
-| Server data           | TanStack Query            | lists, details, profiles                                |
-| Global client state   | Zustand (selectors only)  | session status, theme preference, feature flags, toasts |
-| Persisted preferences | MMKV via `appStorage`     | theme, language                                         |
-| Form state            | react-hook-form + zod     | sign-in form                                            |
-| Local UI state        | `useState` / `useReducer` | focus, toggles, wizard step                             |
+| Kind of state         | Tool                                                                            | Examples                                                |
+| --------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Server data           | TanStack Query                                                                  | lists, details, profiles                                |
+| Global client state   | Zustand (selectors only)                                                        | session status, theme preference, feature flags, toasts |
+| Persisted preferences | MMKV via `appStorage`                                                           | theme, language                                         |
+| Persisted client data | Zustand + `validatedPersistOptions` (`userStorage`, reset via `onSessionEnded`) | cart, drafts, recent searches                           |
+| Form state            | react-hook-form + zod                                                           | sign-in form                                            |
+| Local UI state        | `useState` / `useReducer`                                                       | focus, toggles, wizard step                             |
 
 Never copy server data into Zustand. Never put derived values in state — derive at render (the React Compiler memoises).
 
@@ -269,6 +270,7 @@ Never copy server data into Zustand. Never put derived values in state — deriv
 - Hermes lacks `Intl.PluralRules`; conditional `@formatjs` polyfills self-retire when Hermes ships it. Arabic's six plural forms are covered.
 - **RTL strategy:** native direction via `I18nManager.forceRTL` + one restart when the _direction_ changes (same-direction language switches are instant). Styles use logical props (`marginStart`, `start/end`) and `<Text align="start">`. This mirrors native headers, gestures, back buttons and third-party components — which a JS-only RTL approach cannot. A guarded "restart once" handles first launch on an RTL device.
 - `scripts/check-i18n.mjs` enforces key parity across locales (plural-aware) in pre-commit and CI.
+- Single-language apps: `LANGUAGE_SWITCHING_ENABLED = false` (`core/i18n/languages.ts`) turns off detection and the picker in one place; translations can be parked in `locales/disabled/`.
 
 ### 5.5 Theming
 
@@ -280,6 +282,7 @@ Never copy server data into Zustand. Never put derived values in state — deriv
 
 - React Navigation 7 **static API**: route types and linking paths are inferred from one tree; `useNavigation()` is globally typed via `declare module '@react-navigation/native'`.
 - `native-stack` for all stacks (native transitions, off the JS thread); JS bottom tabs (stable) — native tabs available as `@react-navigation/bottom-tabs/unstable` when needed.
+- Every screen declares an explicit `linking` path. With `enabled: 'auto'`, a screen without one gets `''`, collides with `Main` and breaks **all** deep links at runtime; `app/navigation/linking.test.ts` catches this in CI.
 - Deep links: per-environment scheme (`baseline-dev://`) plus verified App Links / Universal Links host. iOS handles links in `SceneDelegate` (UIScene lifecycle — mandatory with the iOS 27 SDK).
 
 ### 5.7 Native integration
@@ -310,7 +313,7 @@ The questions from the brief, answered honestly after building and running the b
 | Is it secure?                            | See §5.3. Not included by default: pinning, RASP, screenshot blocking — risk-profile decisions.                                                                                                                                                                                                                                                                                                                            |
 | CI/CD ready?                             | CI: typecheck, lint, format, i18n, unit/component tests with coverage, npm audit, Reassure, Android + iOS compile. Release: manual workflow → Fastlane → Play internal / TestFlight with CI-managed build numbers.                                                                                                                                                                                                         |
 | Android and iOS?                         | **iOS** (simulator, iOS 27 SDK): sign-in, list, detail, deep link, dark mode (incl. native alerts), Arabic RTL restart, session restore across restarts, sign-out. **Android** (API 37 emulator): sign-in (Keystore), list with images, infinite pagination. Android `prodRelease` with R8 builds. Not yet exercised on Android: deep links, RTL, dark mode — covered by the Maestro flows, run them before first release. |
-| Low-end devices?                         | Design choices favour them (virtualised lists, UI-thread animations, no context-driven re-render storms, capped page retention `maxPages`). **Not yet measured on a physical low-end device** — run the Flashlight procedure in PERFORMANCE.md before the first release.                                                                                                                                                   |
+| Low-end devices?                         | Design choices favour them (virtualised lists, UI-thread animations, no context-driven re-render storms, thumbnail-sized images, recycled list cells). **Not yet measured on a physical low-end device** — run the Flashlight procedure in PERFORMANCE.md before the first release.                                                                                                                                        |
 | Best practices missed?                   | Open items: physical-device profiling, Maestro in CI (flows exist; needs emulator runners), OTA updates (choice depends on hosting — DECISIONS.md §14).                                                                                                                                                                                                                                                                    |
 | Anything chosen for popularity only?     | No; each choice in DECISIONS.md lists maintenance evidence and rejected alternatives. Several popular options were rejected (axios, AsyncStorage, Redux, expo-image in a bare app, `@gorhom/bottom-sheet`, Jest 30).                                                                                                                                                                                                       |
 

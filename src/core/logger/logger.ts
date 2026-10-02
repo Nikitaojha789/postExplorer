@@ -73,7 +73,10 @@ export const consoleTransport: LogTransport = {
     const args: unknown[] = [`[${level.toUpperCase()}] ${message}`];
     if (context !== undefined) args.push(context);
     if (error !== undefined) args.push(error);
-    if (level === 'debug') console.log(...args);
+    // `warn` goes to console.log: console.warn raises a LogBox toast, and
+    // handled failures (every failed request is logged at warn) would cover
+    // the UI under test. Errors still raise LogBox via console.error.
+    if (level === 'debug' || level === 'warn') console.log(...args);
     else console[level](...args);
     /* eslint-enable no-console */
   },

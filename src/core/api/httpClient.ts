@@ -124,19 +124,34 @@ export const createHttpClient = (config: HttpClientConfig) => {
     const timeoutSignal = AbortSignal.timeout(timeoutMs);
     const fetchImpl = config.fetchImpl ?? fetch;
 
-    return fetchImpl(buildUrl(config.baseUrl, path, query), {
-      method,
-      headers: {
-        Accept: 'application/json',
-        ...(body !== undefined && !isFormData ? { 'Content-Type': 'application/json' } : {}),
-        'X-Request-Id': nextRequestId(),
-        ...config.getDefaultHeaders?.(),
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-        ...headers,
-      },
-      body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
-      signal: signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal,
-    });
+    try {
+      return await fetchImpl(buildUrl(config.baseUrl, path, query), {
+        method,
+        headers: {
+          Accept: 'application/json',
+          ...(body !== undefined && !isFormData ? { 'Content-Type': 'application/json' } : {}),
+          'X-Request-Id': nextRequestId(),
+          ...config.getDefaultHeaders?.(),
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          ...headers,
+        },
+        body: body === undefined ? undefined : isFormData ? body : JSON.stringify(body),
+        signal: signal ? AbortSignal.any([signal, timeoutSignal]) : timeoutSignal,
+      });
+    } catch (error) {
+      // React Native's fetch (whatwg-fetch) rejects EVERY abort with a plain
+      // AbortError and drops the signal's reason, so a timeout would surface
+      // as `cancelled` — never retried, wrong message. The client owns the
+      // timeout signal, so it classifies timeouts itself.
+      if (timeoutSignal.aborted && !signal?.aborted) {
+        throw new AppError({
+          kind: 'timeout',
+          message: `Request timed out after ${timeoutMs} ms`,
+          cause: error,
+        });
+      }
+      throw error;
+    }
   };
 
   const request = async <T>(

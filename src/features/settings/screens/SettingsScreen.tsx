@@ -1,15 +1,15 @@
-import type { ReactNode } from 'react';
 import { Alert, View } from 'react-native';
 
 import { useTranslation } from 'react-i18next';
 
 import { analytics } from '@/core/analytics';
-import { endSession } from '@/core/auth';
+import { endSession, useIsSignedIn } from '@/core/auth';
 import { buildInfo, env } from '@/core/config';
 import {
   changeLanguage,
   getCurrentLanguage,
   LANGUAGE_CODES,
+  LANGUAGE_SWITCHING_ENABLED,
   requiresRestartFor,
   SUPPORTED_LANGUAGES,
   type Language,
@@ -19,8 +19,8 @@ import {
   ListRow,
   makeStyles,
   Screen,
+  Section,
   setThemePreference,
-  Text,
   useThemePreference,
   type ThemePreference,
 } from '@/ui';
@@ -33,6 +33,8 @@ export function SettingsScreen() {
   const { t } = useTranslation();
   const themePreference = useThemePreference();
   const currentLanguage = getCurrentLanguage();
+  // Also reachable by guests if the app adopts the guest-browsing recipe.
+  const isSignedIn = useIsSignedIn();
 
   const selectTheme = (preference: ThemePreference) => {
     setThemePreference(preference);
@@ -70,68 +72,44 @@ export function SettingsScreen() {
         ))}
       </Section>
 
-      <Section title={t('settings.language')}>
-        {LANGUAGE_CODES.map(code => (
-          <ListRow
-            key={code}
-            testID={`language-${code}`}
-            title={SUPPORTED_LANGUAGES[code].nativeName}
-            selected={currentLanguage === code}
-            trailing={currentLanguage === code ? CHECKMARK : undefined}
-            onPress={() => selectLanguage(code)}
-          />
-        ))}
-      </Section>
+      {LANGUAGE_SWITCHING_ENABLED && (
+        <Section title={t('settings.language')}>
+          {LANGUAGE_CODES.map(code => (
+            <ListRow
+              key={code}
+              testID={`language-${code}`}
+              title={SUPPORTED_LANGUAGES[code].nativeName}
+              selected={currentLanguage === code}
+              trailing={currentLanguage === code ? CHECKMARK : undefined}
+              onPress={() => selectLanguage(code)}
+            />
+          ))}
+        </Section>
+      )}
 
       <Section title={t('settings.about')}>
         <ListRow title={t('settings.version')} trailing={buildInfo.label} />
         <ListRow title={t('settings.environment')} trailing={env.APP_ENV} />
       </Section>
 
-      <View style={styles.signOut}>
-        <Button
-          testID="sign-out"
-          title={t('settings.signOut')}
-          variant="secondary"
-          onPress={() => {
-            analytics.track('signed_out');
-            void endSession('user');
-          }}
-          fullWidth
-        />
-      </View>
+      {isSignedIn && (
+        <View style={styles.signOut}>
+          <Button
+            testID="sign-out"
+            title={t('settings.signOut')}
+            variant="secondary"
+            onPress={() => {
+              analytics.track('signed_out');
+              void endSession('user');
+            }}
+            fullWidth
+          />
+        </View>
+      )}
     </Screen>
   );
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
-  const styles = useStyles();
-  return (
-    <View style={styles.section}>
-      <Text
-        variant="label"
-        color="textSecondary"
-        style={styles.sectionTitle}
-        accessibilityRole="header"
-      >
-        {title}
-      </Text>
-      <View style={styles.sectionBody}>{children}</View>
-    </View>
-  );
-}
-
-const useStyles = makeStyles(({ colors, spacing }) => ({
-  section: { marginTop: spacing.xl },
-  sectionTitle: {
-    paddingHorizontal: spacing.lg,
-    paddingBottom: spacing.sm,
-    textTransform: 'uppercase',
-  },
-  sectionBody: {
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: colors.border,
-  },
+const useStyles = makeStyles(({ spacing }) => ({
   signOut: { padding: spacing.lg, marginTop: spacing.xl },
 }));

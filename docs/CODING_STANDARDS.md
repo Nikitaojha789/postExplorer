@@ -59,7 +59,8 @@ Need something from another feature? Move the shared part down (`core/`, `ui/`, 
 - **No hard-coded colours, font sizes or spacing.** Use `theme.colors.*`, `theme.typography.*`, `theme.spacing.*`. Semantic colour roles only; add a role to `themes.ts` only if it is generic ("surfaceSunken"), never screen-specific ("bookingCardShadow").
 - **Logical layout:** `marginStart/End`, `paddingStart/End`, `start/end`, `<Text align="start">`. Never `marginLeft/Right` for direction-dependent spacing.
 - Every interactive element: `accessibilityRole`, a label if there's no visible text, ≥48dp touch target (`MIN_TOUCH_TARGET`), `testID` on anything an E2E flow touches.
-- Every async surface handles **loading, empty, error, offline** (`LoadingState`, `EmptyState`, `ErrorState`, offline pill).
+- Every async surface handles **loading, empty, error, offline** (`Skeleton` or `LoadingState`, `EmptyState`, `ErrorState`, offline pill).
+- Horizontal chip/filter rows use `ChipRow`: a bare horizontal `ScrollView` defaults to `flexGrow: 1` and stretches in a flex column (only visible on a device).
 
 ## 5. Hooks
 
@@ -78,12 +79,13 @@ Need something from another feature? Move the shared part down (`core/`, `ui/`, 
 
 ## 7. State
 
-| Use                                      | When                                                    |
-| ---------------------------------------- | ------------------------------------------------------- |
-| TanStack Query                           | Anything that lives on a server                         |
-| Zustand store (`create`, selectors only) | Small, truly global client state shared across features |
-| `useState`/`useReducer`                  | Everything local                                        |
-| MMKV via `appStorage`/`userStorage`      | Persisted preferences (through `StorageKeys`)           |
+| Use                                      | When                                                        |
+| ---------------------------------------- | ----------------------------------------------------------- |
+| TanStack Query                           | Anything that lives on a server                             |
+| Zustand store (`create`, selectors only) | Small, truly global client state shared across features     |
+| `useState`/`useReducer`                  | Everything local                                            |
+| MMKV via `appStorage`/`userStorage`      | Persisted preferences (through `StorageKeys`)               |
+| Zustand + `validatedPersistOptions`      | Persisted client data; user data resets in `onSessionEnded` |
 
 - Select the smallest slice: `useStore(s => s.status)`, never `useStore()` or `useStore(s => s)`.
 - 🔒 Storage keys only from `StorageKeys` / `SecureKeys` (no string literals at call sites).
@@ -118,7 +120,8 @@ Need something from another feature? Move the shared part down (`core/`, `ui/`, 
 ## 12. Testing
 
 - **Pure logic** → unit tests (no rendering). **Screens/components** → RNTL with `renderWithProviders`, querying by role/text/testID the way a user would; `userEvent` over `fireEvent`.
-- Mock at **module boundaries** (`jest.mock('../api/feedApi')`), not `fetch`, unless you are testing the HTTP client itself.
+- Mock at **module boundaries** (`jest.mock('../api/feedApi')`), not `fetch`, unless you are testing the HTTP client itself. An unmocked request fails the test and names the URL.
+- In RNTL 14 `fireEvent` is async: `await` it. Prefer `userEvent` for interactions.
 - Every bug fix ships with a test that fails without it.
 - Lists or render-heavy screens get a Reassure `*.perf-test.tsx`.
 - Critical user journeys get a Maestro flow keyed on `testID`.

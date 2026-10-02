@@ -17,6 +17,22 @@ import {
 
 const REFRESH_PATH = '/auth/refresh';
 
+type SessionEndedListener = (reason: SignOutReason) => void;
+const sessionEndedListeners = new Set<SessionEndedListener>();
+
+/**
+ * Lets client-side stores that hold user data (cart, drafts, recent
+ * searches…) reset themselves on sign-out without `core/auth` knowing about
+ * them. Wiping `userStorage` is not enough: an in-memory store would write
+ * the previous user's data straight back on its next update.
+ */
+export const onSessionEnded = (listener: SessionEndedListener): (() => void) => {
+  sessionEndedListeners.add(listener);
+  return () => {
+    sessionEndedListeners.delete(listener);
+  };
+};
+
 /** Called once at bootstrap: decides signedIn/signedOut before first paint. */
 export const restoreSession = async (): Promise<void> => {
   const [refreshToken, user] = await Promise.all([
@@ -49,6 +65,16 @@ export const endSession = async (reason: SignOutReason = 'user'): Promise<void> 
   // in-flight screens unmount before their data disappears.
   useSessionStore.setState({ status: 'signedOut', user: null });
   queryClient.clear();
+  for (const listener of sessionEndedListeners) {
+    try {
+      listener(reason);
+    } catch (error) {
+      // One faulty store must not block sign-out for the rest.
+      logger.error('Session-ended listener failed', error);
+    }
+  }
+  // After the listeners: a persisted store's reset writes its initial state,
+  // which this wipe removes too.
   userStorage.clearAll();
   setMonitoringUser(null);
   analytics.reset();
@@ -81,6 +107,12 @@ const refreshAccessToken = async (): Promise<string | null> => {
     throw error;
   }
 };
+
+/**
+ * Dev only: invalidates the in-memory access token so the next authenticated
+ * calls exercise 401 → single-flight refresh → retry. No-op in release.
+ */
+export const expireAccessTokenForTesting = (): void => tokens.expireAccessTokenForTesting();
 
 export const authHttpHandlers: AuthHandlers = {
   getAccessToken: tokens.getAccessToken,

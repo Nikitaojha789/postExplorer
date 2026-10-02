@@ -46,7 +46,11 @@ Goal: keep the JS thread free during interactions, and run motion on the UI thre
 - Row components: `memo`, no inline closures per row, fixed-size images, no `useEffect` in rows, no layout-changing state on scroll.
 - `keyExtractor` returns a stable id (never the index for dynamic data).
 - Heterogeneous rows → `getItemType` so FlashList recycles like with like.
-- Infinite lists: `onEndReached` guarded by `hasNextPage && !isFetchingNextPage`; `maxPages` caps memory for long sessions (feed uses 10).
+- Infinite lists: `onEndReached` guarded by `hasNextPage && !isFetchingNextPage`.
+- **Don't cap pages (`maxPages`) by default.** Trimmed list summaries are small (about 60 KB for ~200 products), and images — the real memory cost — are already recycled by FlashList and FastImage. Use `maxPages` only for truly unbounded feeds (social timelines, logs), and only with all of:
+  - `getPreviousPageParam`, or evicted pages can never be fetched again when the user scrolls back up;
+  - FlashList `onStartReached` → `fetchPreviousPage()` (guarded by `hasPreviousPage && !isFetchingPreviousPage`);
+  - testing on a device: evicting leading pages or header rows can make the scroll position jump. Verify it before shipping.
 - Keep per-row work tiny: format dates/numbers in `select` or once per item, not in every render.
 - Chat / bidirectional lists: consider Legend List v3 (`KeyboardAwareLegendList`, `alignItemsAtEnd`).
 
@@ -58,6 +62,7 @@ Goal: keep the JS thread free during interactions, and run motion on the UI thre
 - **Request the size you render.** Lists use thumbnails (`thumbnailUrl`, ~2× slot size); detail screens use the large rendition. A 1080px image in a 56px row decodes ~370× the pixels and is the #1 cause of list memory spikes on Android.
 - Always give explicit dimensions; never rely on intrinsic size (causes re-layout).
 - `priority="high"` only for above-the-fold heroes.
+- Prefetch on intent: `preloadImages([item.imageUrl])` on press-in, together with `queryClient.prefetchQuery`, so the detail screen paints with its image ready.
 - Prefer WebP/AVIF from the CDN; ship local assets at @2x/@3x, not one huge file.
 - Decorative images: `accessibilityLabel={null}`.
 
@@ -114,7 +119,7 @@ Measure with Sentry app-start spans (cold/warm, TTID/TTFD) and Android Studio's 
 
 ## 9. Memory
 
-- Cap infinite queries (`maxPages`), use thumbnails, avoid keeping big arrays in Zustand.
+- Use thumbnails and avoid keeping big arrays in Zustand. Cap infinite queries (`maxPages`) only under the conditions in §3.
 - Unsubscribe listeners in effect cleanups (NetInfo, AppState, `i18n.on`) — every `subscribe` in this codebase returns its cleanup.
 - Clear timers (toast queue does).
 - `userStorage.clearAll()` + `queryClient.clear()` on sign-out keep the next session lean (and private).

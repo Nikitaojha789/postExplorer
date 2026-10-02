@@ -15,6 +15,11 @@ export const tokens = {
     await secureStorage.set(SecureKeys.refreshToken, pair.refreshToken);
   },
 
+  /** Swaps the in-memory access token for an invalid one (dev tooling only; no-op in release). */
+  expireAccessTokenForTesting(): void {
+    if (__DEV__ && accessToken) accessToken = 'expired-for-testing';
+  },
+
   async clear(): Promise<void> {
     accessToken = null;
     await secureStorage.remove(SecureKeys.refreshToken);

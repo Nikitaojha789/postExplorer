@@ -1,4 +1,11 @@
-export { authHttpHandlers, endSession, restoreSession, startSession } from './session';
+export {
+  authHttpHandlers,
+  endSession,
+  expireAccessTokenForTesting,
+  onSessionEnded,
+  restoreSession,
+  startSession,
+} from './session';
 export {
   useIsSignedIn,
   useIsSignedOut,

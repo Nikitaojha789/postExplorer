@@ -231,6 +231,8 @@ export default tseslint.config(
       ],
       '@typescript-eslint/switch-exhaustiveness-check': 'error',
       '@typescript-eslint/no-non-null-assertion': 'error',
+      // Its autofix rewrites `as T` into `x!`, which the rule above rejects.
+      '@typescript-eslint/non-nullable-type-assertion-style': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       'no-restricted-syntax': [
         'error',
@@ -322,6 +324,9 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-return': 'off',
       'import-x/no-default-export': 'off',
       'jest/expect-expect': ['error', { assertFunctionNames: ['expect', 'measureRenders'] }],
+      // RNTL 14's `fireEvent` is async: it must be awaited (no-floating-promises),
+      // which this web-oriented rule forbids. Prefer `userEvent` for interactions.
+      'testing-library/no-await-sync-events': 'off',
     },
   },
   // Config files legitimately default-export.

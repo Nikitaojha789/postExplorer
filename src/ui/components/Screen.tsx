@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import { View, type StyleProp, type ViewStyle } from 'react-native';
 
-import { KeyboardAwareScrollView } from 'react-native-keyboard-controller';
+import { KeyboardAvoidingView, KeyboardAwareScrollView } from 'react-native-keyboard-controller';
 import { useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 
 import { makeStyles, useTheme } from '@/ui/theme';
@@ -13,6 +13,12 @@ export interface ScreenProps {
    * `scroll`: keyboard-aware scroll view (forms, short content).
    */
   preset?: 'fixed' | 'scroll';
+  /**
+   * `fixed` preset only: shrink the content above the keyboard, so a list
+   * under a search field can scroll its last item into view. Works on iOS
+   * and Android, below headers and above tab bars.
+   */
+  avoidKeyboard?: boolean;
   /** Safe-area edges to pad. Native-stack headers already handle `top`. */
   edges?: readonly Edge[];
   padded?: boolean;
@@ -23,11 +29,13 @@ export interface ScreenProps {
 /**
  * Screen container: background, safe-area padding and keyboard handling.
  * Never wrap a FlashList in the `scroll` preset — nesting a virtualized list
- * in a ScrollView disables virtualization.
+ * in a ScrollView disables virtualization. A list screen with a text input
+ * (search, chat composer) uses `preset="fixed"` + `avoidKeyboard` instead.
  */
 export function Screen({
   children,
   preset = 'fixed',
+  avoidKeyboard = false,
   edges = [],
   padded = true,
   contentStyle,
@@ -61,6 +69,14 @@ export function Screen({
     );
   }
 
+  if (avoidKeyboard) {
+    return (
+      <KeyboardAvoidingView testID={testID} behavior="padding" automaticOffset style={styles.root}>
+        <View style={[styles.fill, edgePadding, contentStyle]}>{children}</View>
+      </KeyboardAvoidingView>
+    );
+  }
+
   return (
     <View testID={testID} style={[styles.root, edgePadding, contentStyle]}>
       {children}
@@ -70,4 +86,5 @@ export function Screen({
 
 const useStyles = makeStyles(({ colors }) => ({
   root: { flex: 1, backgroundColor: colors.background },
+  fill: { flex: 1 },
 }));

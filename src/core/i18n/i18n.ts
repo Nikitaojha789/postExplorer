@@ -13,6 +13,7 @@ import {
   isRtlLanguage,
   isSupportedLanguage,
   LANGUAGE_CODES,
+  LANGUAGE_SWITCHING_ENABLED,
   type Language,
 } from './languages';
 import { defaultNS, resources } from './resources';
@@ -28,6 +29,9 @@ import { defaultNS, resources } from './resources';
 const RTL_RESTART_GUARD = 'i18n.rtlRestartGuard';
 
 const detectLanguage = (): Language => {
+  // Switching disabled: ignore stored and device languages, so a device set
+  // to another (possibly RTL) language never triggers a direction restart.
+  if (!LANGUAGE_SWITCHING_ENABLED) return DEFAULT_LANGUAGE;
   const stored = appStorage.getString(StorageKeys.language);
   if (isSupportedLanguage(stored)) return stored;
   // Validate rather than trust: tags can come back regionalised ("en-US").
@@ -77,6 +81,10 @@ export const getCurrentLanguage = (): Language =>
 
 /** Persists and applies a language. Resolves `true` if the app will restart. */
 export const changeLanguage = async (language: Language): Promise<boolean> => {
+  if (!LANGUAGE_SWITCHING_ENABLED) {
+    logger.warn('Language switching is disabled', { language });
+    return false;
+  }
   appStorage.setString(StorageKeys.language, language);
   await i18next.changeLanguage(language);
   if (applyDirection(language)) {

@@ -16,6 +16,9 @@ import { SettingsScreen } from '@/features/settings';
  * - Auth gating via `if:` groups: when the session flips, React Navigation
  *   swaps the stacks itself. Never `navigate()` after sign-in/out.
  * - Titles call `i18n.t` lazily; `useRetranslateNavigation` re-evaluates them.
+ * - EVERY screen declares an explicit `linking` path. With `enabled: 'auto'`,
+ *   a screen without one gets `''` and collides with `Main`, which breaks
+ *   ALL deep links at runtime. `linking.test.ts` enforces this.
  */
 const MainTabs = createBottomTabNavigator({
   // Icons hidden until the app adds its icon set (e.g. react-native-svg):

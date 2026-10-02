@@ -8,7 +8,10 @@ import { makeStyles, useTheme } from '@/ui/theme';
 import { Button } from './Button';
 import { Text } from './Text';
 
-/** Full-area loading indicator. Prefer skeletons for content-shaped loading. */
+/**
+ * Full-area loading indicator. For content-shaped loading (lists, cards)
+ * prefer `<Skeleton>` placeholders that mirror the layout.
+ */
 export function LoadingState({ testID = 'loading-state' }: { testID?: string }) {
   const styles = useStyles();
   const { colors } = useTheme();

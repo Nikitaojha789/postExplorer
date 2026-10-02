@@ -11,6 +11,10 @@ import { setUpTests } from 'react-native-reanimated';
 
 setUpTests();
 
+// Worklets' official mock: Gesture Handler 3 installs UI-runtime bindings on
+// import (via a microtask), which the real Worklets runtime rejects under Jest.
+jest.mock('react-native-worklets', () => require('react-native-worklets/src/mock'));
+
 jest.mock(
   'react-native-safe-area-context',
   () => require('react-native-safe-area-context/jest/mock').default,
@@ -39,3 +43,22 @@ jest.mock('react-native-bootsplash', () => ({
 }));
 jest.mock('@d11/react-native-fast-image', () => require('./test/mocks/react-native-fast-image'));
 jest.mock('@sentry/react-native', () => require('./test/mocks/sentry'));
+
+// Tests never touch the network. An unmocked request (e.g. a hook that closes
+// over the real API object) rejects at once instead of waiting for timeouts,
+// and the test fails with the URL — see COOKBOOK → Add a feature → Tests.
+const unmockedRequests: string[] = [];
+globalThis.fetch = jest.fn((input: RequestInfo | URL) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+  unmockedRequests.push(url);
+  return Promise.reject(new Error(`Unmocked network request: ${url}`));
+});
+afterEach(() => {
+  const urls = unmockedRequests.splice(0);
+  if (urls.length > 0) {
+    throw new Error(
+      `Unmocked network request(s): ${urls.join(', ')}. Mock the feature's api module ` +
+        '(jest.mock) or pass `fetchImpl` to createHttpClient.',
+    );
+  }
+});

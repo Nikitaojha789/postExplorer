@@ -84,13 +84,14 @@ Layers import downward only (`shared ← core ← ui ← features ← app`), fea
 
 ## Verification status
 
-What has actually been run (1 Oct 2026, Xcode 27 / iOS 27 simulator, Android API 37 emulator):
+What has actually been run (Xcode 27 / iOS 27 simulator, Android API 37 emulator; last updated 2 Oct 2026):
 
-- `npm run validate` — typecheck, lint (incl. architecture rules), format, i18n parity, 48 tests, coverage thresholds: **passing**
+- `npm run validate` — typecheck, lint (incl. architecture rules), format, i18n parity, 70 tests, coverage thresholds: **passing**
 - Android `assembleDevDebug` and `assembleProdRelease` (R8, Hermes bytecode): **build**
 - iOS `Debug-Dev` simulator build: **builds and runs**
 - Manually exercised on iOS: sign-in → feed → detail → deep link → dark mode → Arabic RTL (restart) → English → sign-out, session restore across restarts
 - Manually exercised on Android: sign-in (Keystore) → feed with images → infinite pagination
-- Release JS bundle verified free of dev mock code
+- Release JS bundle verified free of dev mock code and dev network/auth tooling
+- Hardened from a real product build (an e-commerce app stress-tested on both platforms): RN-fetch timeout classification, sign-out store reset, deep-link conflict test, Gesture Handler test harness, persisted-store helper, list-screen keyboard handling (verified on iOS and Android), Dev Menu network simulation (offline verified on Android)
 
 Not yet done: iOS release/archive build with signing, Maestro flows in CI, profiling on a physical low-end device. See ARCHITECTURE.md §6.

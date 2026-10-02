@@ -37,7 +37,7 @@ src/features/orders/
 
 2. **Keys** — `export const ordersKeys = { all: ['orders'] as const, list: () => [...ordersKeys.all, 'list'] as const };`
 
-3. **Hooks** — queries own keys/select/meta; mutations update the cache:
+3. **Hooks** — in `hooks/`, never in the same module as the endpoint object (a hook that closes over the real `ordersApi` can't be reached by `jest.mock('../api/ordersApi')`). Queries own keys/select/meta; mutations update the cache:
 
    ```ts
    export const useOrders = () =>
@@ -56,7 +56,7 @@ src/features/orders/
 5. **Strings** — add keys to every file in `src/core/i18n/locales/`.
 6. **Route** — register in `src/app/navigation/RootNavigator.tsx` (with a `linking` path if it should be deep-linkable). Screen params: `type Props = StaticScreenProps<{ id: string }>`.
 7. **Mocks (optional)** — `features/orders/mocks.ts` + call it from `src/app/bootstrap/mocks.ts`.
-8. **Tests** — screen test with `renderWithProviders` + mocked `ordersApi`; Reassure test if it's a long list.
+8. **Tests** — screen test with `renderWithProviders` + mocked `ordersApi`; Reassure test if it's a long list. A request that isn't mocked fails the test immediately and names the URL (`jest.setup.ts`).
 
 ## Add a screen to an existing navigator
 
@@ -92,10 +92,39 @@ Put it in `src/ui/components/`, export from `src/ui/components/index.ts`. It mus
 3. Add plural locale data in `src/app/bootstrap/polyfills.ts` (`@formatjs/intl-pluralrules/locale-data/<code>.js`).
 4. `npm run i18n:check`.
 
-## Add a persisted preference
+## Persist a client store (cart, drafts, recent searches)
 
 1. Key in `src/core/storage/keys.ts` (`StorageKeys`).
-2. Small Zustand store initialised from `appStorage` (survives sign-out) or `userStorage` (wiped on sign-out); validate with zod via `getObject`. See `ui/theme/themePreference.ts`.
+2. Pick the storage: `userStorage` for anything about the signed-in user (wiped on sign-out), `appStorage` for device-level settings that survive sign-out.
+3. Create the store with `validatedPersistOptions`. Rehydrated data is validated by the schema (corrupt or old data → initial state), and MMKV hydrates synchronously, so the first render already has the data:
+
+   ```ts
+   const CartSchema = z.object({ items: z.array(CartItemSchema) });
+   type CartState = z.infer<typeof CartSchema> & { add: (item: CartItem) => void };
+   const initialState = { items: [] };
+
+   export const useCartStore = create<CartState>()(
+     persist(
+       set => ({ ...initialState, add: item => set(s => ({ items: [...s.items, item] })) }),
+       validatedPersistOptions({
+         key: StorageKeys.cart,
+         store: userStorage,
+         schema: CartSchema,
+         partialize: ({ items }) => ({ items }),
+       }),
+     ),
+   );
+   ```
+
+4. **User data must reset on sign-out.** Wiping `userStorage` isn't enough: the in-memory store would write the previous user's data back on its next update. Register once, next to the store:
+
+   ```ts
+   onSessionEnded(() => useCartStore.setState(initialState)); // from @/core/auth
+   ```
+
+5. Changing the persisted shape: bump `version`. Without a `migrate` function, old data is dropped; with one, it's upgraded and then validated.
+
+A single small value (theme, language) can skip Zustand persistence: read it with `appStorage.getObject(key, schema)`, as `ui/theme/themePreference.ts` does.
 
 ## Request a permission
 
@@ -140,6 +169,53 @@ For caches that may hold personal data: generate a 32-byte key with a CSPRNG (`r
 
 `@op-engineering/op-sqlite` + `drizzle-orm/op-sqlite`, wrapped in `core/database/`. Use when you need relational queries, large datasets, full-text search or offline-first sync — not for simple caching (TanStack + MMKV covers that).
 
+## Compose features without importing each other
+
+Features can't import each other (lint-enforced). When one screen needs another feature's UI or data:
+
+- **UI from another feature → a slot filled in `app/`.** The product screen takes a render prop, and the navigator wires the cart's component into it:
+
+  ```tsx
+  // features/catalog: ProductScreen({ renderPurchaseBar }: { renderPurchaseBar?: (id: string) => ReactNode })
+  // app/navigation: screen: (props) => <ProductScreen {...props} renderPurchaseBar={id => <AddToCartBar id={id} />} />
+  ```
+
+- **Glue that belongs to no feature → a small component in `app/`**, e.g. a tab label with a cart badge (`app/navigation/TabLabel.tsx`) that reads the cart store's public hook.
+- **The same server data in two or more features** (e.g. the current user's profile) → move its endpoint, key factory and hook into `src/core/<name>/`. Both features then share one query key: one cache entry, one request.
+
+## Guest browsing with sign-in on demand (optional)
+
+The reference navigator gates hard: signed-out users see only `SignedOut`. To let guests browse and ask for sign-in only when needed (e.g. at checkout):
+
+```ts
+const RootStack = createNativeStackNavigator({
+  groups: {
+    Shared: { screens: { Main: …, Product: … } },                       // no `if:` → always available
+    SignedIn: { if: useIsSignedIn, screens: { Checkout: …, Orders: … } },
+    SignedOut: {
+      if: useIsSignedOut,
+      screenOptions: { presentation: 'modal' },
+      screens: { SignIn: { screen: SignInScreen, linking: 'sign-in' } },
+    },
+  },
+});
+```
+
+- Ask for sign-in with `navigation.navigate('SignIn')`. When the session flips, React Navigation removes the modal and the user is back where they were.
+- Every screen still needs an explicit `linking` path (`linking.test.ts` fails otherwise).
+- Screens reachable by guests must handle "no session" themselves (`useIsSignedIn()`). Settings already hides "Sign out" for guests.
+
+## Keyboard on a list screen (search, chat)
+
+`Screen preset="scroll"` handles the keyboard, but a FlashList must never go inside it. For a list under an input, use the fixed preset with `avoidKeyboard`. The content shrinks above the keyboard, so the last result can be scrolled into view, on iOS and Android, below headers and above tab bars:
+
+```tsx
+<Screen padded={false} avoidKeyboard>
+  <TextField label={t('search.label')} … />
+  <FlashList … keyboardShouldPersistTaps="handled" />
+</Screen>
+```
+
 ## Bottom sheets & modals
 
 Prefer native: `presentation: 'formSheet'` (with `sheetAllowedDetents`) or `'modal'` on a native-stack screen. They're accessible, gesture-correct and free of JS-thread work.
@@ -156,3 +232,4 @@ Prefer native: `presentation: 'formSheet'` (with `sheetAllowedDetents`) or `'mod
 - JS `console.*` output appears in DevTools, **not** in the Metro terminal (RN ≥0.77).
 - Optional: [Rozenite](https://github.com/callstackincubator/rozenite) DevTools plugins (TanStack Query, MMKV, network, navigation) — dev-only.
 - Release-only issues: build `android:staging` / `ios:staging`; bundling errors (Babel/syntax) appear only in release.
+- **Bad network, offline and token expiry on a simulator:** open the Dev Menu (Cmd+D on iOS, Cmd+M on Android) and use the `Network:` and `Auth:` entries (`app/bootstrap/devMenu.ts`). They toggle simulated offline (queries pause, the offline banner shows, requests fail), cycle added latency (up to 20 s, beyond the request timeout) and 30% failures, and expire the access token to exercise 401 → refresh → retry. They work against the mock API and real backends. Dev builds only.

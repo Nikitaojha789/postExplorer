@@ -5,6 +5,8 @@
  *  - keys present in a translation but not in the source
  * Plural forms (_zero/_one/_two/_few/_many/_other) are compared by base key,
  * because each language legitimately has a different set of plural forms.
+ * Only top-level files are checked: parked translations in `locales/disabled/`
+ * are skipped (see src/core/i18n/languages.ts).
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';

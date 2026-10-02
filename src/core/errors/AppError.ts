@@ -75,9 +75,24 @@ export const kindFromStatus = (status: number): AppErrorKind => {
   return 'unknown';
 };
 
+const hasName = (value: unknown): value is { name: string } =>
+  typeof value === 'object' &&
+  value !== null &&
+  typeof (value as { name?: unknown }).name === 'string';
+
 /** Normalise anything thrown into an `AppError` without losing the original. */
 export const toAppError = (error: unknown): AppError => {
   if (isAppError(error)) return error;
+  // Abort reasons are DOMExceptions. From another realm or a polyfill they
+  // are not `instanceof Error`, so classify them by name.
+  if (!(error instanceof Error) && hasName(error)) {
+    if (error.name === 'TimeoutError') {
+      return new AppError({ kind: 'timeout', message: 'Request timed out', cause: error });
+    }
+    if (error.name === 'AbortError') {
+      return new AppError({ kind: 'cancelled', message: 'Request was cancelled', cause: error });
+    }
+  }
   if (error instanceof Error) {
     if (error.name === 'AbortError') {
       return new AppError({ kind: 'cancelled', message: 'Request was cancelled', cause: error });

@@ -31,8 +31,13 @@ export const bootstrap = (): void => {
   bindNetworkStatus();
   bindAppStateToQueries();
 
-  // `__DEV__` is a compile-time constant: this branch and the mock modules
-  // are stripped from release bundles.
+  // `__DEV__` is a compile-time constant: these branches and the modules
+  // they require are stripped from release bundles.
+  if (__DEV__) {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const { registerDevMenu } = require('./devMenu') as { registerDevMenu: () => void };
+    registerDevMenu();
+  }
   if (__DEV__ && env.USE_MOCK_API) {
     // eslint-disable-next-line @typescript-eslint/no-require-imports
     const { registerDevMocks } = require('./mocks') as { registerDevMocks: () => void };

@@ -44,3 +44,11 @@ describe('AppError flags', () => {
     );
   });
 });
+
+describe('toAppError with non-Error abort reasons', () => {
+  it('classifies cross-realm or polyfilled DOMExceptions by name', () => {
+    expect(toAppError({ name: 'TimeoutError', message: 'signal timed out' }).kind).toBe('timeout');
+    expect(toAppError({ name: 'AbortError', message: 'aborted' }).kind).toBe('cancelled');
+    expect(toAppError({ name: 'Other' }).kind).toBe('unknown');
+  });
+});

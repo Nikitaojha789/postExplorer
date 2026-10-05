@@ -81,6 +81,7 @@ Layers import downward only (`shared ← core ← ui ← features ← app`), fea
 | [ENVIRONMENTS_AND_RELEASES.md](docs/ENVIRONMENTS_AND_RELEASES.md) | Env vars, signing, versioning, CI, releases, RN upgrades                                       |
 | [COOKBOOK.md](docs/COOKBOOK.md)                                   | Adding a feature/screen/endpoint/language/permission/flag; push; encryption; renaming          |
 | [MIGRATION_FROM_REFERENCE.md](docs/MIGRATION_FROM_REFERENCE.md)   | Moving the Sehanexis app (or a similar one) onto this baseline                                 |
+| [AGENTS.md](AGENTS.md) · [AI/](AI/README.md)                      | Working with AI agents: their rules, routing, playbooks and per-project memory                 |
 
 ## Verification status
 

@@ -74,7 +74,7 @@ Goal: keep the JS thread free during interactions, and run motion on the UI thre
 - Animate **transform and opacity**; avoid animating `width/height/top/left/margin` (forces layout every frame).
 - Never read a shared value on the JS thread in render (`sv.value` in JSX) — it synchronously crosses threads.
 - Keep simultaneous animated components low on low-end Android (Reanimated docs: ~100 on low-end Android vs ~500 on iOS).
-- Gestures: Gesture Handler 3 hook API; memoise gesture configs; do work in worklets, `runOnJS` only for the final result.
+- Gestures: Gesture Handler 3 hook API; memoise gesture configs; do work in worklets, `scheduleOnRN` (from `react-native-worklets`; `runOnJS` is deprecated) only for the final result.
 - Feature flags (`package.json → reanimated.staticFeatureFlags`) such as `ANDROID_SYNCHRONOUSLY_UPDATE_UI_PROPS` only after profiling shows jank they address.
 - iOS 120 Hz: `CADisableMinimumFrameDurationOnPhone` is already `true` in Info.plist.
 - Respect **Reduce Motion** (`useReducedMotion` from Reanimated) for large movements.

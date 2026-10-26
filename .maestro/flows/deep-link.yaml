@@ -1,5 +1,5 @@
 # Deep link into a detail screen while signed in, and confirm it is gated when signed out.
-appId: com.company.baseline.dev
+appId: com.postexplorer.dev
 ---
 - launchApp:
     clearState: true

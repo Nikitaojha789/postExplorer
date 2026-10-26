@@ -1,4 +1,9 @@
 {
   "name": "Baseline",
-  "displayName": "Baseline"
+  "displayName": "PostExplorer",
+  "expo": {
+    "name": "PostExplorer",
+    "slug": "post-explorer",
+    "plugins": ["react-native-bootsplash"]
+  }
 }

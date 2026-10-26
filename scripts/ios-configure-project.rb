@@ -64,7 +64,7 @@ end
 
 File.write(File.join(CONFIG_DIR, 'Shared.xcconfig'), <<~XCCONFIG)
   // Settings shared by every configuration. Managed by scripts/ios-configure-project.rb.
-  PRODUCT_BUNDLE_IDENTIFIER = com.company.baseline$(APP_ID_SUFFIX)
+  PRODUCT_BUNDLE_IDENTIFIER = com.postexplorer$(APP_ID_SUFFIX)
   // CI overrides with the build number: xcodebuild CURRENT_PROJECT_VERSION=$BUILD_NUMBER
   CURRENT_PROJECT_VERSION = 1
 XCCONFIG

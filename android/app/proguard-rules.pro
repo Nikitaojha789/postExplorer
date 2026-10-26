@@ -10,4 +10,4 @@
 # Add any project specific keep options here:
 
 # react-native-config reads BuildConfig fields via reflection.
--keep class com.company.baseline.BuildConfig { *; }
+-keep class com.postexplorer.BuildConfig { *; }

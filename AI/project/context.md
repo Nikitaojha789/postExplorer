@@ -14,6 +14,7 @@ Baseline defaults — see `AI/rules/libraries.md` §3. Deviations from Baseline 
 
 | Feature    | Screens (route → deep-link path)                | Endpoints                                  | Status                                  |
 | ---------- | ----------------------------------------------- | ------------------------------------------ | --------------------------------------- |
+| `posts`    | `PostList` → `''`, `PostDetail` → `posts/:id`   | `GET /posts`, `GET /posts/:id`             | Live — JSONPlaceholder                  |
 | `auth`     | `SignIn` → `sign-in` (signed-out group)         | `POST /auth/sign-in`, `POST /auth/refresh` | Reference — adapt to the real auth flow |
 | `feed`     | `Feed` (tab) → `feed`, `FeedItem` → `items/:id` | `GET /items`, `GET /items/:id`             | Reference — replace or delete           |
 | `settings` | `Settings` (tab) → `settings`                   | —                                          | Reference — keep and extend             |

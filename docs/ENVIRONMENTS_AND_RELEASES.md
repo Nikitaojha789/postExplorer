@@ -2,12 +2,12 @@
 
 ## 1. Environments
 
-| Environment | `.env` file        | Android flavor | iOS configurations / scheme                              | App id                     | Purpose                            |
-| ----------- | ------------------ | -------------- | -------------------------------------------------------- | -------------------------- | ---------------------------------- |
-| Development | `.env.development` | `dev`          | `Debug-Dev` / `Release-Dev` · `Baseline-Dev`             | `com.company.baseline.dev` | Local work; mock API on by default |
-| QA          | `.env.qa`          | `qa`           | `Debug-QA` / `Release-QA` · `Baseline-QA`                | `….qa`                     | Test team builds                   |
-| Staging     | `.env.staging`     | `staging`      | `Debug-Staging` / `Release-Staging` · `Baseline-Staging` | `….staging`                | Production-like pre-release        |
-| Production  | `.env.production`  | `prod`         | `Debug-Prod` / `Release-Prod` · `Baseline-Prod`          | `com.company.baseline`     | Store builds                       |
+| Environment | `.env` file        | Android flavor | iOS configurations / scheme                              | App id                 | Purpose                            |
+| ----------- | ------------------ | -------------- | -------------------------------------------------------- | ---------------------- | ---------------------------------- |
+| Development | `.env.development` | `dev`          | `Debug-Dev` / `Release-Dev` · `Baseline-Dev`             | `com.postexplorer.dev` | Local work; mock API on by default |
+| QA          | `.env.qa`          | `qa`           | `Debug-QA` / `Release-QA` · `Baseline-QA`                | `….qa`                 | Test team builds                   |
+| Staging     | `.env.staging`     | `staging`      | `Debug-Staging` / `Release-Staging` · `Baseline-Staging` | `….staging`            | Production-like pre-release        |
+| Production  | `.env.production`  | `prod`         | `Debug-Prod` / `Release-Prod` · `Baseline-Prod`          | `com.postexplorer`     | Store builds                       |
 
 Distinct app ids, display names and deep-link schemes let all four builds sit side by side on one device.
 

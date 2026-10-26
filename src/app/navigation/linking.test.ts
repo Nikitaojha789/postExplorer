@@ -55,10 +55,10 @@ describe('deep linking', () => {
   });
 
   it.each([
-    ['feed', ['Main', 'Feed'], undefined],
-    ['settings', ['Main', 'Settings'], undefined],
+    ['', ['PostList'], undefined],
+    ['posts/12', ['PostDetail'], { id: 12 }],
+    ['feed', ['Feed'], undefined],
     ['items/abc-1', ['FeedItem'], { id: 'abc-1' }],
-    ['sign-in', ['SignIn'], undefined],
   ])('resolves %s', (path, names, params) => {
     const result = leaf(path);
     expect(result.names).toEqual(names);

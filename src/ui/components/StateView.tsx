@@ -12,18 +12,30 @@ import { Text } from './Text';
  * Full-area loading indicator. For content-shaped loading (lists, cards)
  * prefer `<Skeleton>` placeholders that mirror the layout.
  */
-export function LoadingState({ testID = 'loading-state' }: { testID?: string }) {
+export function LoadingState({
+  testID = 'loading-state',
+  message,
+}: {
+  testID?: string;
+  message?: string;
+}) {
   const styles = useStyles();
   const { colors } = useTheme();
   const { t } = useTranslation();
+  const label = message ?? t('common.loading');
   return (
     <View
       style={styles.center}
       testID={testID}
       accessibilityRole="progressbar"
-      accessibilityLabel={t('common.loading')}
+      accessibilityLabel={label}
     >
       <ActivityIndicator size="large" color={colors.primary} />
+      {message !== undefined && (
+        <Text color="textSecondary" align="center">
+          {message}
+        </Text>
+      )}
     </View>
   );
 }

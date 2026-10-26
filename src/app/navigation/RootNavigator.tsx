@@ -1,74 +1,51 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import { useIsSignedIn, useIsSignedOut } from '@/core/auth';
 import { i18n } from '@/core/i18n';
-import { SignInScreen } from '@/features/auth';
 import { FeedItemScreen, FeedScreen } from '@/features/feed';
-import { SettingsScreen } from '@/features/settings';
+import { PostDetailScreen, PostListScreen } from '@/features/posts';
 
 /**
- * Static navigation config: route types and deep-link paths are inferred
- * from this tree, so there is no hand-maintained ParamList to drift.
+ * Static navigation config for PostExplorer:
+ * Route types and deep-link paths are inferred from this tree.
  *
  * - native-stack: platform UINavigationController / Fragment transitions,
  *   run natively off the JS thread.
- * - Auth gating via `if:` groups: when the session flips, React Navigation
- *   swaps the stacks itself. Never `navigate()` after sign-in/out.
- * - Titles call `i18n.t` lazily; `useRetranslateNavigation` re-evaluates them.
- * - EVERY screen declares an explicit `linking` path. With `enabled: 'auto'`,
- *   a screen without one gets `''` and collides with `Main`, which breaks
- *   ALL deep links at runtime. `linking.test.ts` enforces this.
+ * - PostList: root list screen (linking: '')
+ * - PostDetail: detail screen for a selected post (linking: 'posts/:id')
  */
-const MainTabs = createBottomTabNavigator({
-  // Icons hidden until the app adds its icon set (e.g. react-native-svg):
-  // set `tabBarIcon` per screen and remove `tabBarIconStyle`.
+const RootStack = createNativeStackNavigator({
   screenOptions: {
-    headerShown: true,
-    tabBarIconStyle: { display: 'none' },
-    tabBarLabelStyle: { fontSize: 15 },
+    headerBackButtonDisplayMode: 'minimal',
   },
   screens: {
+    PostList: {
+      screen: PostListScreen,
+      options: () => ({
+        title: i18n.t('posts.listTitle'),
+      }),
+      linking: '',
+    },
+    PostDetail: {
+      screen: PostDetailScreen,
+      options: () => ({
+        title: i18n.t('posts.detailTitle'),
+        headerBackTitle: i18n.t('posts.backTitle'),
+      }),
+      linking: { path: 'posts/:id', parse: { id: Number } },
+    },
     Feed: {
       screen: FeedScreen,
       options: () => ({
         title: i18n.t('feed.title'),
-        tabBarLabel: i18n.t('tabs.feed'),
-        tabBarButtonTestID: 'tab-feed',
       }),
       linking: 'feed',
     },
-    Settings: {
-      screen: SettingsScreen,
+    FeedItem: {
+      screen: FeedItemScreen,
       options: () => ({
-        title: i18n.t('settings.title'),
-        tabBarLabel: i18n.t('tabs.settings'),
-        tabBarButtonTestID: 'tab-settings',
+        title: i18n.t('feed.detailTitle'),
       }),
-      linking: 'settings',
-    },
-  },
-});
-
-const RootStack = createNativeStackNavigator({
-  screenOptions: { headerBackButtonDisplayMode: 'minimal' },
-  groups: {
-    SignedIn: {
-      if: useIsSignedIn,
-      screens: {
-        Main: { screen: MainTabs, options: { headerShown: false }, linking: '' },
-        FeedItem: {
-          screen: FeedItemScreen,
-          options: () => ({ title: i18n.t('feed.detailTitle') }),
-          linking: { path: 'items/:id', parse: { id: String } },
-        },
-      },
-    },
-    SignedOut: {
-      if: useIsSignedOut,
-      screens: {
-        SignIn: { screen: SignInScreen, options: { headerShown: false }, linking: 'sign-in' },
-      },
+      linking: { path: 'items/:id', parse: { id: String } },
     },
   },
 });

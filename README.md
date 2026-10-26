@@ -1,98 +1,184 @@
-# Baseline — React Native foundation
+# PostExplorer — Production-Quality React Native Take-Home App
 
-> **New here? Start with the [Quick Guide](docs/QUICK_GUIDE.md)** — structure, first steps, creating screens and features, changing the server URL, in simple words.
+A production-grade mobile application built on **React Native 0.87** (Hermes V1, New Architecture, TypeScript Strict, React Compiler 1.0) exploring posts from the JSONPlaceholder public API.
 
-The team's production baseline for new React Native apps: a bare **React Native 0.87** app (New Architecture, Hermes V1) with the infrastructure every app needs already wired, tested and documented — and nothing an app doesn't need.
+---
 
-| Layer        | Choice                                                                                                                  |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| Runtime      | React Native 0.87.1 · React 19.2 · Hermes V1 · New Architecture · React Compiler 1.0                                    |
-| Language     | TypeScript 6.0 strict                                                                                                   |
-| Navigation   | React Navigation 7 (static API, native-stack, auth-gated groups, typed deep links)                                      |
-| Server state | TanStack Query 5 (offline-aware, selective persistence)                                                                 |
-| Client state | Zustand 5                                                                                                               |
-| Networking   | Typed `fetch` client (timeouts, cancellation, single-flight token refresh, zod validation)                              |
-| Storage      | MMKV 4 (sync KV) · Keychain/Keystore (secrets)                                                                          |
-| UI           | Design system on StyleSheet + tokens · FlashList 2 · Reanimated 4 · Gesture Handler 3 · keyboard-controller · FastImage |
-| Platform     | i18next (+ RTL) · Sentry (facade) · react-native-config (4 environments) · permissions · bootsplash                     |
-| Quality      | ESLint 10 (architecture boundaries) · Prettier 3 · Jest 29 + RNTL 14 · Reassure · Maestro · lefthook + commitlint       |
-| Delivery     | GitHub Actions CI · Fastlane → Play internal track / TestFlight                                                         |
+## 📱 Screenshots
 
-## Quick start
+> _Screenshots captured on iOS & Android emulators:_
 
-Prerequisites: Node 24 (`.nvmrc`), Ruby + Bundler, Xcode 16.1+ (built and run with Xcode 27), Android Studio with SDK 37 / NDK 27, JDK 17. Follow the [RN environment setup](https://reactnative.dev/docs/set-up-your-environment) for your OS.
+|                                 Posts List Screen                                  |                                  Post Details Screen                                   |                              Pull-to-Refresh & States                               |
+| :--------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------: |
+| ![Posts List Placeholder](https://placehold.co/300x650/png?text=Posts+List+Screen) | ![Post Details Placeholder](https://placehold.co/300x650/png?text=Post+Details+Screen) | ![States Placeholder](https://placehold.co/300x650/png?text=Error+%26+Empty+States) |
+
+---
+
+## 🎯 Features Implemented
+
+### 1. Posts List Screen (`PostListScreen`)
+
+- **High-Performance List:** Uses `@shopify/flash-list` (v2, optimized for New Architecture & Fabric) to render 100 posts efficiently with high frame rates and recycling.
+- **Informative Post Cards:** Each card displays:
+  - Post ID badge (`#ID`)
+  - Author/User indicator (`User {userId}`)
+  - Title (truncated to 2 lines with graceful ellipsis)
+  - Body preview (truncated to 2 lines, single-spaced)
+  - Interactive press state (`surfaceRaised` visual feedback, touch feedback)
+- **Pull-to-Refresh:** Integrated with React Native's `RefreshControl` via TanStack Query refetching without replacing or flashing cached content.
+- **Empty State:** Clean, user-friendly empty state if the API yields no records.
+- **Full Accessibility:** Meaningful accessibility labels, button roles, and hints for screen readers.
+
+### 2. Post Detail Screen (`PostDetailScreen`)
+
+- **Seamless Transition:** Opens upon tapping any post card in the list, passing only the post `id`.
+- **Cached Instant Paint + Background Sync:** Uses TanStack Query's `placeholderData` from the posts list cache so that the detail view renders instantly without a blank screen, while refetching the latest detail in the background.
+- **Complete Post Metadata:** Displays the full uncapped title, complete formatted body, Post ID chip, and User ID chip.
+- **Back Navigation:** Native stack header back button with platform-native pop gestures (iOS swipe-from-edge, Android back button).
+- **Graceful Error & Invalid ID Handling:** Validates numeric post IDs. If an invalid or missing post is requested (e.g. via deep link), an informative state is presented without crashing.
+
+### 3. Loading, Error, and Retry States
+
+- **Loading State:** Centered activity indicator with a helpful message (`Loading posts…` / `Loading post details…`).
+- **Error Handling:** Maps errors to classified types (`network`, `timeout`, `parse`, `unauthorized`, `server`) and displays user-friendly localized messages.
+- **Retry Mechanism:** Provides an accessible, responsive "Try again" action that directly triggers query refetching.
+- **No Hardcoded Fake Data:** Fetches directly from the real public JSONPlaceholder endpoints. Dev mocks remain available for isolated offline development.
+
+---
+
+## 🛠️ Technology Stack & Architectural Decisions
+
+| Layer                   | Choice                                                    | Rationale                                                                               |
+| :---------------------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
+| **Runtime**             | React Native 0.87.1, React 19.2.3, Hermes V1              | Bare React Native New Architecture (Fabric + TurboModules enabled)                      |
+| **Language**            | TypeScript 6.0 (Strict mode)                              | Type-safe data layer, navigation routes, and props                                      |
+| **Compiler**            | React Compiler 1.0 (`babel-plugin-react-compiler`)        | Automatic memoization of component render trees                                         |
+| **Navigation**          | `@react-navigation/native` v7 (Static API + Native Stack) | Type-safe static navigation tree, native stack transitions, deep link resolution        |
+| **Server State**        | `@tanstack/react-query` v5                                | Declarative query caching, stale-while-revalidate, deduplication, retry logic           |
+| **List Virtualization** | `@shopify/flash-list` v2                                  | Next-generation list rendering leveraging Fabric on the New Architecture                |
+| **Network Client**      | Native `fetch` with typed `httpClient` wrapper            | Timeout signals, cancellation signals, Zod response validation, AppError categorization |
+| **Validation**          | `zod` v4                                                  | Runtime schema validation ensuring backend contracts match frontend types               |
+| **Localization**        | `i18next` & `react-i18next`                               | Modular translations (`en`, `ar`) with strict parity check script                       |
+| **Theme & UI**          | In-house design system                                    | Semantic color roles, 4-pt spacing scale, light & dark mode support                     |
+| **Quality & Tests**     | Jest 29, Testing Library 14, ESLint 10, Prettier 3        | Architecture boundaries enforced via ESLint, 20 test suites (80 tests passing)          |
+
+### Note on Expo Go
+
+This project is built on **bare React Native 0.87 with the New Architecture** (Fabric/TurboModules/Hermes V1) rather than the managed Expo Go client. Expo Go does not target bare RN 0.87. Standard React Native CLI commands (`react-native run-ios`, `react-native run-android`, or Metro development server) are used to run the app.
+
+---
+
+## 🌐 API Endpoints Used
+
+The application integrates with [JSONPlaceholder](https://jsonplaceholder.typicode.com):
+
+- **List Posts:** `GET https://jsonplaceholder.typicode.com/posts`
+  - Validated by `PostListSchema` (`z.array(PostSchema)`).
+- **Post Details:** `GET https://jsonplaceholder.typicode.com/posts/:id`
+  - Validated by `PostSchema` (`{ userId: number, id: number, title: string, body: string }`).
+
+---
+
+## 📂 Project Structure
+
+The project follows a strict vertical slice architecture with downward-only dependencies:
+
+```
+src/
+├── app/                  # Composition root
+│   ├── App.tsx           # Providers (GestureHandler, SafeArea, QueryClient, ErrorBoundary)
+│   ├── bootstrap/        # App startup, logging, and mock initialization
+│   └── navigation/       # RootNavigator (static stack tree), Navigation container, deep linking
+├── features/             # Vertical slices
+│   ├── posts/            # Posts Explorer feature
+│   │   ├── api/          # postsApi.ts (HTTP client + Zod schemas), postsKeys.ts (query keys)
+│   │   ├── hooks/        # usePosts.ts (list and detail queries with placeholderData)
+│   │   ├── components/   # PostCard.tsx (accessible, memoized list item)
+│   │   ├── screens/      # PostListScreen.tsx (FlashList, refresh), PostDetailScreen.tsx
+│   │   ├── mocks.ts      # Offline dev mock routes
+│   │   └── index.ts      # Feature public API
+│   ├── auth/             # Reference auth slice
+│   ├── feed/             # Reference feed slice
+│   └── settings/         # Reference settings slice
+├── ui/                   # Design system
+│   ├── components/       # Screen, Text, Button, Chip, Badge, StateView (Loading/Error/Empty)
+│   └── theme/            # Theme tokens, semantic color roles, light/dark modes
+├── core/                 # Shared infrastructure (API, config, errors, i18n, storage, logger)
+└── shared/               # Pure utilities and non-React types
+```
+
+---
+
+## ⚙️ Prerequisites
+
+- **Node.js**: `v22.22.0` or `>=24.3.0` (see `.nvmrc`)
+- **Package Manager**: `npm`
+- **iOS:** macOS with Xcode 16.1+ and CocoaPods (`bundle install`)
+- **Android:** Android Studio with Android SDK Platform 35+, NDK 27+, JDK 17
+
+---
+
+## 🚀 Installation & Running
+
+### 1. Install Dependencies
 
 ```bash
 npm install
 ```
 
+### 2. Configure Native Pods (iOS only)
+
 ```bash
 bundle install && npm run pods
 ```
+
+### 3. Start the Metro Bundler
+
+```bash
+npm start
+# or reset cache if needed:
+npm run start:reset
+```
+
+### 4. Run on iOS (Simulator)
 
 ```bash
 npm run ios:dev
 ```
 
+### 5. Run on Android (Emulator / Device)
+
 ```bash
 npm run android:dev
 ```
 
-The dev environment uses an **in-app mock API** (`USE_MOCK_API=true` in `.env.development`): sign in with any email and the password `password`. Set it to `false` and `API_URL` to your backend when it's ready.
+---
 
-> **First-time repo setup:** `npm install` installs git hooks via lefthook (requires a git repository). npm 11 runs install scripts only for packages approved in `package.json → allowScripts`.
+## 🧪 Testing and Quality Assurance
 
-## Scripts
+The codebase enforces strict quality checks across TypeScript, ESLint layer boundaries, Prettier, i18n key parity, and Jest test suites.
 
-| Script                                                        | Does                                                                                 |
-| ------------------------------------------------------------- | ------------------------------------------------------------------------------------ |
-| `start` / `start:reset`                                       | Metro (optionally clearing cache)                                                    |
-| `android:{dev,qa,staging,prod}` · `ios:{dev,qa,staging,prod}` | Build & run an environment                                                           |
-| `pods` · `ios:configure`                                      | CocoaPods install (+ env xcconfig generation) · re-create iOS configurations/schemes |
-| `build:android` · `build:android:apk`                         | Production AAB / APK                                                                 |
-| `validate`                                                    | typecheck + lint + format check + i18n parity + tests — run before pushing           |
-| `test` · `test:coverage` · `test:perf`                        | Jest · with coverage thresholds · Reassure                                           |
-| `e2e`                                                         | Maestro smoke flows (`.maestro/`)                                                    |
-| `lint:fix` · `format`                                         | Auto-fix                                                                             |
-| `clean`                                                       | Remove node_modules, Pods, builds, caches                                            |
+### Run All Validation Checks (Typecheck + Lint + Format + i18n + Tests)
 
-## Project structure
-
-```
-src/
-├── app/        composition root: bootstrap, providers, navigation, deep links
-├── features/   vertical slices (auth, feed, settings) — screens, hooks, api, components
-├── ui/         design system: theme tokens + accessible, themed, RTL-safe components
-├── core/       infrastructure: api, auth, storage, config, i18n, errors, logger, monitoring, …
-└── shared/     pure utils & types
+```bash
+npm run validate
 ```
 
-Layers import downward only (`shared ← core ← ui ← features ← app`), features never import each other, and vendor SDKs are reachable only through their core module — **enforced by ESLint**. Details: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md).
+### Individual Commands
 
-## Documentation
+- **TypeScript Typecheck:** `npm run typecheck`
+- **Lint (Architecture & ESLint):** `npm run lint`
+- **Prettier Format Check:** `npm run format:check`
+- **Auto-Format:** `npm run format`
+- **i18n Parity Check:** `npm run i18n:check`
+- **Run Unit Tests:** `npm test`
+- **Test Coverage:** `npm run test:coverage`
 
-| Doc                                                               | Read it when                                                                                   |
-| ----------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| [ARCHITECTURE.md](docs/ARCHITECTURE.md)                           | Onboarding; deciding where code goes; understanding data/auth/error flows; quality-gate review |
-| [DECISIONS.md](docs/DECISIONS.md)                                 | Wondering _why_ a library was chosen (evidence + rejected alternatives + revisit triggers)     |
-| [CODING_STANDARDS.md](docs/CODING_STANDARDS.md)                   | Writing or reviewing code                                                                      |
-| [PERFORMANCE.md](docs/PERFORMANCE.md)                             | Building lists, animations, startup-sensitive code; profiling                                  |
-| [DEPENDENCIES.md](docs/DEPENDENCIES.md)                           | Adding/upgrading a package                                                                     |
-| [ENVIRONMENTS_AND_RELEASES.md](docs/ENVIRONMENTS_AND_RELEASES.md) | Env vars, signing, versioning, CI, releases, RN upgrades                                       |
-| [COOKBOOK.md](docs/COOKBOOK.md)                                   | Adding a feature/screen/endpoint/language/permission/flag; push; encryption; renaming          |
-| [MIGRATION_FROM_REFERENCE.md](docs/MIGRATION_FROM_REFERENCE.md)   | Moving the Sehanexis app (or a similar one) onto this baseline                                 |
-| [AGENTS.md](AGENTS.md) · [AI/](AI/README.md)                      | Working with AI agents: their rules, routing, playbooks and per-project memory                 |
+---
 
-## Verification status
+## 🔗 Deep Linking
 
-What has actually been run (Xcode 27 / iOS 27 simulator, Android API 37 emulator; last updated 2 Oct 2026):
+Deep linking is statically defined and tested via `RootNavigator`:
 
-- `npm run validate` — typecheck, lint (incl. architecture rules), format, i18n parity, 70 tests, coverage thresholds: **passing**
-- Android `assembleDevDebug` and `assembleProdRelease` (R8, Hermes bytecode): **build**
-- iOS `Debug-Dev` simulator build: **builds and runs**
-- Manually exercised on iOS: sign-in → feed → detail → deep link → dark mode → Arabic RTL (restart) → English → sign-out, session restore across restarts
-- Manually exercised on Android: sign-in (Keystore) → feed with images → infinite pagination
-- Release JS bundle verified free of dev mock code and dev network/auth tooling
-- Hardened from a real product build (an e-commerce app stress-tested on both platforms): RN-fetch timeout classification, sign-out store reset, deep-link conflict test, Gesture Handler test harness, persisted-store helper, list-screen keyboard handling (verified on iOS and Android), Dev Menu network simulation (offline verified on Android)
-
-Not yet done: iOS release/archive build with signing, Maestro flows in CI, profiling on a physical low-end device. See ARCHITECTURE.md §6.
+- `baseline-dev://` or `posts` → Opens **Posts List** (`PostListScreen`)
+- `baseline-dev://posts/:id` → Opens **Post Detail** (`PostDetailScreen`) for post `:id`

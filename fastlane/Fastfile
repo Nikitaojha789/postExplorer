@@ -11,7 +11,7 @@ ENVIRONMENTS = {
   'staging' => { flavor: 'staging', scheme: 'Staging', suffix: '.staging' },
   'prod'    => { flavor: 'prod',    scheme: 'Prod',    suffix: '' },
 }.freeze
-BASE_ID = 'com.company.baseline'
+BASE_ID = 'com.postexplorer'
 
 def environment!(options)
   ENVIRONMENTS.fetch(options[:env].to_s) { UI.user_error!("env must be one of #{ENVIRONMENTS.keys.join(', ')}") }

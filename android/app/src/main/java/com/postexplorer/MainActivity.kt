@@ -1,4 +1,4 @@
-package com.company.baseline
+package com.postexplorer
 
 import android.os.Bundle
 import com.facebook.react.ReactActivity

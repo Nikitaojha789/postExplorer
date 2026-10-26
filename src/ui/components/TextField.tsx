@@ -1,5 +1,6 @@
 import { memo, useState, type ComponentRef, type Ref } from 'react';
-import { TextInput, View, type TextInputProps } from 'react-native';
+import type { StyleProp, TextInputProps, ViewStyle } from 'react-native';
+import { TextInput, View } from 'react-native';
 
 import { makeStyles, MIN_TOUCH_TARGET, useTheme } from '@/ui/theme';
 
@@ -8,9 +9,10 @@ import { Text } from './Text';
 export type TextFieldRef = ComponentRef<typeof TextInput>;
 
 export interface TextFieldProps extends TextInputProps {
-  label: string;
+  label?: string;
   /** Already-translated error message; renders the field in an error state. */
   error?: string;
+  containerStyle?: StyleProp<ViewStyle>;
   ref?: Ref<TextFieldRef>;
 }
 
@@ -18,6 +20,7 @@ export const TextField = memo(function TextField({
   label,
   error,
   style,
+  containerStyle,
   onFocus,
   onBlur,
   ref,
@@ -28,14 +31,16 @@ export const TextField = memo(function TextField({
   const [focused, setFocused] = useState(false);
 
   return (
-    <View style={styles.container}>
-      <Text variant="label" color="textSecondary" nativeID={`${label}-label`}>
-        {label}
-      </Text>
+    <View style={[styles.container, containerStyle]}>
+      {Boolean(label) && (
+        <Text variant="label" color="textSecondary" nativeID={`${label}-label`}>
+          {label}
+        </Text>
+      )}
       <TextInput
         ref={ref}
-        accessibilityLabel={label}
-        accessibilityLabelledBy={`${label}-label`}
+        accessibilityLabel={label ?? rest.accessibilityLabel}
+        accessibilityLabelledBy={label ? `${label}-label` : undefined}
         accessibilityHint={error}
         placeholderTextColor={colors.textMuted}
         selectionColor={colors.primary}

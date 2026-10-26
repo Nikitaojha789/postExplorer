@@ -1,6 +1,6 @@
 # Smoke test: cold start → sign in → feed → detail → back → settings → sign out.
 # Selectors use testID only (stable across copy and language changes).
-appId: com.company.baseline.dev
+appId: com.postexplorer.dev
 ---
 - launchApp:
     clearState: true

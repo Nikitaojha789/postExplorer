@@ -155,7 +155,7 @@ curl https://get.flashlight.dev | bash
 Run the Maestro smoke flow 10× (default) and record measures:
 
 ```bash
-flashlight test --bundleId com.company.baseline.staging --testCommand "maestro test .maestro/flows/sign-in-and-browse.yaml" --duration 20000 --resultsFilePath results.json
+flashlight test --bundleId com.postexplorer.staging --testCommand "maestro test .maestro/flows/sign-in-and-browse.yaml" --duration 20000 --resultsFilePath results.json
 ```
 
 ```bash

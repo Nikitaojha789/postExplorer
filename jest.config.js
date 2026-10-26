@@ -5,6 +5,8 @@ module.exports = {
   resolver: 'react-native-reanimated/jest/resolver',
   setupFilesAfterEnv: ['<rootDir>/jest.setup.ts'],
   moduleNameMapper: {
+    '^react-native/react-private-interface$':
+      '<rootDir>/node_modules/react-native/src/react-private-interface.js',
     '^@/(.*)$': '<rootDir>/src/$1',
     '^@test/(.*)$': '<rootDir>/test/$1',
   },

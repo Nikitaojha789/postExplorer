@@ -49,14 +49,14 @@ Log in with **any email** and password **`password`** (this is a fake "mock" ser
 
 **Step 4 — Make it yours**
 
-| What to change                                    | Where                                                                                                                                                       |
-| ------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| App name shown on the phone                       | `APP_DISPLAY_NAME` in the four `.env.*` files                                                                                                               |
-| Server (API) address                              | `API_URL` in the four `.env.*` files (see §6)                                                                                                               |
-| Brand colours                                     | `src/ui/theme/tokens.ts` (the `palette` at the top)                                                                                                         |
-| Splash screen logo                                | Run `npx react-native-bootsplash generate your-logo.png --platforms=android,ios --background=#FFFFFF --logo-width=96 --assets-output=src/assets/bootsplash` |
-| Bundle id / package name (`com.company.baseline`) | Follow COOKBOOK.md → "Rename the app" (touches a few native files)                                                                                          |
-| Remove example features you don't need            | Delete the folder in `src/features/`, remove its screen from `src/app/navigation/RootNavigator.tsx` and its line in `src/app/bootstrap/mocks.ts`            |
+| What to change                                | Where                                                                                                                                                       |
+| --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App name shown on the phone                   | `APP_DISPLAY_NAME` in the four `.env.*` files                                                                                                               |
+| Server (API) address                          | `API_URL` in the four `.env.*` files (see §6)                                                                                                               |
+| Brand colours                                 | `src/ui/theme/tokens.ts` (the `palette` at the top)                                                                                                         |
+| Splash screen logo                            | Run `npx react-native-bootsplash generate your-logo.png --platforms=android,ios --background=#FFFFFF --logo-width=96 --assets-output=src/assets/bootsplash` |
+| Bundle id / package name (`com.postexplorer`) | Follow COOKBOOK.md → "Rename the app" (touches a few native files)                                                                                          |
+| Remove example features you don't need        | Delete the folder in `src/features/`, remove its screen from `src/app/navigation/RootNavigator.tsx` and its line in `src/app/bootstrap/mocks.ts`            |
 
 **Step 5 — Check everything still works**
 

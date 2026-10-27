@@ -75,7 +75,7 @@ jobs:
         with:
           distribution: zulu
           java-version: 17
-      - uses: gradle/actions/setup-gradle@v4
+      - uses: gradle/actions/setup-gradle@v6
       - run: npm ci
       - name: Assemble
         working-directory: android

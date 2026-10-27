@@ -96,3 +96,7 @@ android/keystore.properties
 .reassure/
 .maestro/output/
 ios/Config/Generated/
+
+# Generated Android release builds
+android/app/staging/release/*.apk
+android/app/build/outputs/

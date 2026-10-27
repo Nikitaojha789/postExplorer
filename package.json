@@ -60,7 +60,7 @@
     "react-native-bootsplash": "^6.3.10",
     "react-native-config": "1.7.2",
     "react-native-device-info": "15.0.2",
-    "react-native-gesture-handler": "3.3.0",
+    "react-native-gesture-handler": "3.4.0",
     "react-native-keyboard-controller": "1.22.7",
     "react-native-keychain": "10.0.0",
     "react-native-localize": "3.7.2",

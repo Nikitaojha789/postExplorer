@@ -1,184 +1,157 @@
-# PostExplorer — Production-Quality React Native Take-Home App
+# PostExplorer 📱
 
-A production-grade mobile application built on **React Native 0.87** (Hermes V1, New Architecture, TypeScript Strict, React Compiler 1.0) exploring posts from the JSONPlaceholder public API.
-
----
-
-## 📱 Screenshots
-
-> _Screenshots captured on iOS & Android emulators:_
-
-|                                 Posts List Screen                                  |                                  Post Details Screen                                   |                              Pull-to-Refresh & States                               |
-| :--------------------------------------------------------------------------------: | :------------------------------------------------------------------------------------: | :---------------------------------------------------------------------------------: |
-| ![Posts List Placeholder](https://placehold.co/300x650/png?text=Posts+List+Screen) | ![Post Details Placeholder](https://placehold.co/300x650/png?text=Post+Details+Screen) | ![States Placeholder](https://placehold.co/300x650/png?text=Error+%26+Empty+States) |
+An intuitive and modern mobile app built to explore, read, and browse articles and posts with ease.
 
 ---
 
-## 🎯 Features Implemented
+## 🌟 What is PostExplorer?
 
-### 1. Posts List Screen (`PostListScreen`)
+**PostExplorer** is a simple and clean mobile application designed for reading posts. Whether you are browsing a list of articles or diving deep into a specific story, the app provides a smooth, fast, and delightful reading experience.
 
-- **High-Performance List:** Uses `@shopify/flash-list` (v2, optimized for New Architecture & Fabric) to render 100 posts efficiently with high frame rates and recycling.
-- **Informative Post Cards:** Each card displays:
-  - Post ID badge (`#ID`)
-  - Author/User indicator (`User {userId}`)
-  - Title (truncated to 2 lines with graceful ellipsis)
-  - Body preview (truncated to 2 lines, single-spaced)
-  - Interactive press state (`surfaceRaised` visual feedback, touch feedback)
-- **Pull-to-Refresh:** Integrated with React Native's `RefreshControl` via TanStack Query refetching without replacing or flashing cached content.
-- **Empty State:** Clean, user-friendly empty state if the API yields no records.
-- **Full Accessibility:** Meaningful accessibility labels, button roles, and hints for screen readers.
-
-### 2. Post Detail Screen (`PostDetailScreen`)
-
-- **Seamless Transition:** Opens upon tapping any post card in the list, passing only the post `id`.
-- **Cached Instant Paint + Background Sync:** Uses TanStack Query's `placeholderData` from the posts list cache so that the detail view renders instantly without a blank screen, while refetching the latest detail in the background.
-- **Complete Post Metadata:** Displays the full uncapped title, complete formatted body, Post ID chip, and User ID chip.
-- **Back Navigation:** Native stack header back button with platform-native pop gestures (iOS swipe-from-edge, Android back button).
-- **Graceful Error & Invalid ID Handling:** Validates numeric post IDs. If an invalid or missing post is requested (e.g. via deep link), an informative state is presented without crashing.
-
-### 3. Loading, Error, and Retry States
-
-- **Loading State:** Centered activity indicator with a helpful message (`Loading posts…` / `Loading post details…`).
-- **Error Handling:** Maps errors to classified types (`network`, `timeout`, `parse`, `unauthorized`, `server`) and displays user-friendly localized messages.
-- **Retry Mechanism:** Provides an accessible, responsive "Try again" action that directly triggers query refetching.
-- **No Hardcoded Fake Data:** Fetches directly from the real public JSONPlaceholder endpoints. Dev mocks remain available for isolated offline development.
+Even if you have **zero technical background**, this guide will walk you through exactly how the app works, screen by screen.
 
 ---
 
-## 🛠️ Technology Stack & Architectural Decisions
+## 🗺️ App Flow at a Glance
 
-| Layer                   | Choice                                                    | Rationale                                                                               |
-| :---------------------- | :-------------------------------------------------------- | :-------------------------------------------------------------------------------------- |
-| **Runtime**             | React Native 0.87.1, React 19.2.3, Hermes V1              | Bare React Native New Architecture (Fabric + TurboModules enabled)                      |
-| **Language**            | TypeScript 6.0 (Strict mode)                              | Type-safe data layer, navigation routes, and props                                      |
-| **Compiler**            | React Compiler 1.0 (`babel-plugin-react-compiler`)        | Automatic memoization of component render trees                                         |
-| **Navigation**          | `@react-navigation/native` v7 (Static API + Native Stack) | Type-safe static navigation tree, native stack transitions, deep link resolution        |
-| **Server State**        | `@tanstack/react-query` v5                                | Declarative query caching, stale-while-revalidate, deduplication, retry logic           |
-| **List Virtualization** | `@shopify/flash-list` v2                                  | Next-generation list rendering leveraging Fabric on the New Architecture                |
-| **Network Client**      | Native `fetch` with typed `httpClient` wrapper            | Timeout signals, cancellation signals, Zod response validation, AppError categorization |
-| **Validation**          | `zod` v4                                                  | Runtime schema validation ensuring backend contracts match frontend types               |
-| **Localization**        | `i18next` & `react-i18next`                               | Modular translations (`en`, `ar`) with strict parity check script                       |
-| **Theme & UI**          | In-house design system                                    | Semantic color roles, 4-pt spacing scale, light & dark mode support                     |
-| **Quality & Tests**     | Jest 29, Testing Library 14, ESLint 10, Prettier 3        | Architecture boundaries enforced via ESLint, 20 test suites (80 tests passing)          |
+Here is a simple map of how you move through the app:
 
-### Note on Expo Go
-
-This project is built on **bare React Native 0.87 with the New Architecture** (Fabric/TurboModules/Hermes V1) rather than the managed Expo Go client. Expo Go does not target bare RN 0.87. Standard React Native CLI commands (`react-native run-ios`, `react-native run-android`, or Metro development server) are used to run the app.
-
----
-
-## 🌐 API Endpoints Used
-
-The application integrates with [JSONPlaceholder](https://jsonplaceholder.typicode.com):
-
-- **List Posts:** `GET https://jsonplaceholder.typicode.com/posts`
-  - Validated by `PostListSchema` (`z.array(PostSchema)`).
-- **Post Details:** `GET https://jsonplaceholder.typicode.com/posts/:id`
-  - Validated by `PostSchema` (`{ userId: number, id: number, title: string, body: string }`).
-
----
-
-## 📂 Project Structure
-
-The project follows a strict vertical slice architecture with downward-only dependencies:
-
-```
-src/
-├── app/                  # Composition root
-│   ├── App.tsx           # Providers (GestureHandler, SafeArea, QueryClient, ErrorBoundary)
-│   ├── bootstrap/        # App startup, logging, and mock initialization
-│   └── navigation/       # RootNavigator (static stack tree), Navigation container, deep linking
-├── features/             # Vertical slices
-│   ├── posts/            # Posts Explorer feature
-│   │   ├── api/          # postsApi.ts (HTTP client + Zod schemas), postsKeys.ts (query keys)
-│   │   ├── hooks/        # usePosts.ts (list and detail queries with placeholderData)
-│   │   ├── components/   # PostCard.tsx (accessible, memoized list item)
-│   │   ├── screens/      # PostListScreen.tsx (FlashList, refresh), PostDetailScreen.tsx
-│   │   ├── mocks.ts      # Offline dev mock routes
-│   │   └── index.ts      # Feature public API
-│   ├── auth/             # Reference auth slice
-│   ├── feed/             # Reference feed slice
-│   └── settings/         # Reference settings slice
-├── ui/                   # Design system
-│   ├── components/       # Screen, Text, Button, Chip, Badge, StateView (Loading/Error/Empty)
-│   └── theme/            # Theme tokens, semantic color roles, light/dark modes
-├── core/                 # Shared infrastructure (API, config, errors, i18n, storage, logger)
-└── shared/               # Pure utilities and non-React types
+```mermaid
+graph TD
+    A["👋 1. Login Screen<br/>(Enter any email + password: 'password')"] -->|Sign In Button| B["📰 2. Posts List Tab<br/>(Browse all posts & articles)"]
+    B -->|Tap any Post Card| C["📖 3. Post Details<br/>(Read full article & author info)"]
+    C -->|Tap Back Button / Swipe| B
+    B -->|Pull down screen| D["🔄 Refresh List<br/>(Fetch latest posts)"]
+    B <-->|Bottom Tab Bar| E["⚙️ 4. Settings Tab<br/>(Switch Light/Dark Mode & Language)"]
+    E -->|Tap Log Out| A
 ```
 
 ---
 
-## ⚙️ Prerequisites
+## 📱 Step-by-Step App Walkthrough
 
-- **Node.js**: `v22.22.0` or `>=24.3.0` (see `.nvmrc`)
-- **Package Manager**: `npm`
-- **iOS:** macOS with Xcode 16.1+ and CocoaPods (`bundle install`)
-- **Android:** Android Studio with Android SDK Platform 35+, NDK 27+, JDK 17
+### 1. 🔐 Sign-In Screen (Login)
+
+When you open the app, you are greeted with the **Sign-In** screen.
+
+- **Email Field**: Type any valid email address (for example: `user@example.com` or `alex@gmail.com`).
+- **Password Field**: Enter the password **`password`**.
+- **Help Hint**: Right below the button, a friendly note reminds you:  
+  _“Login with any email and password is \"password\"”_.
+- **Validation**: If you leave the fields empty or type an invalid email format, friendly helper messages guide you on what to fix.
+- **Tapping "Sign In"**: Once entered correctly, you are instantly logged into the app.
 
 ---
 
-## 🚀 Installation & Running
+### 2. 📰 Posts List Screen (Home)
 
-### 1. Install Dependencies
+After logging in, you arrive at the main **Posts List**.
+
+- **Post Cards**: Each article is presented as an organized card containing:
+  - **Post #Number**: The unique ID of the post.
+  - **Author**: Which user wrote the post.
+  - **Title**: A clear headline.
+  - **Preview**: The first few lines of the post so you can quickly see what it is about.
+- **Smooth Scrolling**: Scroll through posts effortlessly without any stutter or delay.
+- **Pull to Refresh**: Drag down from the top of the list anytime to check for new updates. A spinning refresh icon lets you know new posts are loading.
+- **Tapping a Post**: Tap anywhere on a card to open its full details.
+
+---
+
+### 3. 📖 Post Details Screen
+
+When you tap a post from the list, the **Post Details** screen opens.
+
+- **Instant Loading**: The post opens immediately without making you wait on a blank screen.
+- **Full Story**: Read the complete headline and full text of the article.
+- **Author & Post Tags**: Visual badges clearly highlight the Post ID and Author.
+- **Going Back**: Tap the **`< Back`** button at the top left (or swipe from the edge of the screen on iPhone) to return right where you left off in the list.
+
+---
+
+### 4. ⚙️ Settings & Customization
+
+PostExplorer is built to adapt to your preferences:
+
+- **☀️ Light / 🌙 Dark Mode**: Prefer a sleek dark look at night? Switch easily between Light, Dark, or your phone's System theme.
+- **🌐 Languages (English & Arabic)**: The app fully supports both English and Arabic. When Arabic is selected, the entire app smoothly flips to a right-to-left layout.
+- **🚪 Log Out**: Tap **Log Out** in settings to safely exit your session and return to the login screen.
+
+---
+
+### 5. 🛡️ Friendly Error & Offline Handling
+
+If something goes wrong (like losing internet connection in an elevator or subway):
+
+- **No Mysterious Crashes**: The app never crashes or closes unexpectedly.
+- **Helpful Messages**: Instead of confusing technical jargon, you get clear, plain-language notices (e.g., _"Can't reach the server. Check your connection"_).
+- **Try Again Button**: Simply tap the **"Try again"** button once your connection is back.
+
+---
+
+## 🚀 Quick Start Guide (How to Run the App)
+
+For team members, reviewers, or testers who want to launch the app on their computer:
+
+### Step 1: Install Dependencies
+
+Open your computer's terminal, go to the project folder, and run:
 
 ```bash
 npm install
 ```
 
-### 2. Configure Native Pods (iOS only)
+_(On Mac for iOS testing, also run: `bundle install && npm run pods`)_
 
-```bash
-bundle install && npm run pods
-```
-
-### 3. Start the Metro Bundler
+### Step 2: Start the Development Server
 
 ```bash
 npm start
-# or reset cache if needed:
-npm run start:reset
 ```
 
-### 4. Run on iOS (Simulator)
+### Step 3: Launch the App
 
-```bash
-npm run ios:dev
-```
-
-### 5. Run on Android (Emulator / Device)
-
-```bash
-npm run android:dev
-```
+- **On Android**: Run `npm run android:dev`
+- **On iOS (Mac)**: Run `npm run ios:dev`
 
 ---
 
-## 🧪 Testing and Quality Assurance
+## 🛠️ For Developers & Technical Reviewers
 
-The codebase enforces strict quality checks across TypeScript, ESLint layer boundaries, Prettier, i18n key parity, and Jest test suites.
+<details>
+<summary><strong>Click to view Technical Stack & Architecture Details</strong></summary>
 
-### Run All Validation Checks (Typecheck + Lint + Format + i18n + Tests)
+### Tech Stack
 
-```bash
-npm run validate
-```
+- **Framework**: React Native 0.87 (Bare, New Architecture, Fabric & TurboModules, Hermes V1)
+- **Language**: TypeScript 6.0 (Strict mode)
+- **Compiler**: React Compiler 1.0 (`babel-plugin-react-compiler`)
+- **Navigation**: `@react-navigation/native` v7 (Static API, Native Stack with auth-gated groups)
+- **Data Fetching & Cache**: `@tanstack/react-query` v5 (stale-while-revalidate, optimistic rendering)
+- **List Performance**: `@shopify/flash-list` v2 (Fabric recycled view cells)
+- **Schema Validation**: `zod` v4
+- **Localization**: `i18next` & `react-i18next` (`en`, `ar` with strict parity checking)
+- **Testing**: Jest 29, Testing Library 14 (Unit tests, linking tests, auth flows)
 
-### Individual Commands
+### Verification Commands
 
-- **TypeScript Typecheck:** `npm run typecheck`
-- **Lint (Architecture & ESLint):** `npm run lint`
-- **Prettier Format Check:** `npm run format:check`
-- **Auto-Format:** `npm run format`
-- **i18n Parity Check:** `npm run i18n:check`
-- **Run Unit Tests:** `npm test`
-- **Test Coverage:** `npm run test:coverage`
+- `npm run validate` — Full check: Typecheck + Lint + Format + i18n parity + All Unit Tests
+- `npm test` — Run all test suites
+- `npm run typecheck` — Strict TypeScript checking
+- `npm run lint` — ESLint rules & architecture boundaries
+- `npm run format:check` — Prettier code style check
+
+</details>
 
 ---
 
-## 🔗 Deep Linking
+## 📄 Summary
 
-Deep linking is statically defined and tested via `RootNavigator`:
-
-- `baseline-dev://` or `posts` → Opens **Posts List** (`PostListScreen`)
-- `baseline-dev://posts/:id` → Opens **Post Detail** (`PostDetailScreen`) for post `:id`
+| What you want to do       | How to do it in the app                                 |
+| :------------------------ | :------------------------------------------------------ |
+| **Log in**                | Enter any email, type `password`, and tap **Sign in**   |
+| **Browse posts**          | Scroll up and down on the main screen                   |
+| **Read a post**           | Tap any post card to read the full content              |
+| **Refresh the list**      | Drag down from the top of the posts list                |
+| **Change theme/language** | Open Settings to switch appearance or language          |
+| **Log out**               | Tap Log Out in Settings to return to the sign-in screen |

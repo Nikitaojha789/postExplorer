@@ -6,7 +6,6 @@ import { Controller, useForm } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { z } from 'zod';
 
-import { useMockApi } from '@/core/config';
 import { errorMessageKey, toAppError } from '@/core/errors';
 import { Button, makeStyles, Screen, Text, TextField, type TextFieldRef } from '@/ui';
 
@@ -119,11 +118,9 @@ export function SignInScreen() {
         fullWidth
       />
 
-      {useMockApi && (
-        <Text variant="caption" color="textMuted" align="center">
-          {t('auth.mockHint')}
-        </Text>
-      )}
+      <Text variant="caption" color="textMuted" align="center" testID="sign-in-hint">
+        {t('auth.mockHint')}
+      </Text>
     </Screen>
   );
 }

@@ -36,9 +36,10 @@
     "password": "Password",
     "submit": "Sign in",
     "invalidCredentials": "Incorrect email or password.",
-    "mockHint": "Mock API: any email, password “password”."
+    "mockHint": "Login with any email and password is \"password\""
   },
   "tabs": {
+    "posts": "Posts",
     "feed": "Feed",
     "settings": "Settings"
   },
@@ -64,7 +65,7 @@
     "about": "About",
     "version": "Version",
     "environment": "Environment",
-    "signOut": "Sign out"
+    "signOut": "Log out"
   },
   "posts": {
     "listTitle": "Posts Explorer",

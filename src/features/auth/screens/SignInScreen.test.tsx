@@ -57,4 +57,9 @@ describe('SignInScreen', () => {
     expect(await screen.findByText('Incorrect email or password.')).toBeOnTheScreen();
     expect(useSessionStore.getState().status).toBe('signedOut');
   });
+
+  it('displays the hint below the submit button', async () => {
+    await renderWithProviders(<SignInScreen />);
+    expect(screen.getByText('Login with any email and password is "password"')).toBeOnTheScreen();
+  });
 });
